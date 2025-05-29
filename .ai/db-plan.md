@@ -1,39 +1,82 @@
-<conversation_summary>
-<decisions>
+/\* PostgreSQL Database Schema Plan for 10x-cards
 
-1. Supabase będzie obsługiwać tabelę użytkowników (`users`) z kolumnami: `id` (UUID), `email`, `created_at`, `encrypted_password`, `confirmed_at`.
-2. Tabela `flashcards` będzie zawierać: `id` (bigserial), `front` (VARCHAR(200)), `back` (VARCHAR(500)), `source` (z constraint CHECK ograniczającym wartości do "ai-full", "ai-edited", "manual"), `created_at`, `updated_at`, `generation_id` (FK do `generations`) oraz `user_id` (FK do `users`).
-3. Tabela `generations` będzie zawierać: `id` (bigserial), `user_id` (FK), `model`, `generated_count`, `accepted_unedited_count`, `accepted_edited_count`, `source_text_hash`, `source_text_length` (z ograniczeniem wartości od 1000 do 10000) oraz kolumnę `created_at`.
-4. Tabela `generations_error_logs` będzie zawierać: `id` (bigserial), `user_id` (FK), `model`, `source_text_hash`, `source_text_length` (z ograniczeniem wartości od 1000 do 10000), `error_code`, `error_message` oraz `created_at`.
-5. Pole `updated_at` w tabeli `flashcards` ma być automatycznie aktualizowane za pomocą triggera.
-6. Zasady RLS będą wdrożone, aby użytkownik miał dostęp tylko do swoich danych, wykorzystując autoryzację opartą na Supabase Auth.
-7. Klucze główne w tabelach `flashcards`, `generations` i `generations_error_logs` pozostaną jako bigserial, mimo że identyfikatory w tabeli `users` są typu UUID.
-   </decisions>
+1. Tables Definition
 
-<matched_recommendations>
+---
 
-1. Użycie constraint CHECK dla kolumny `source` w tabeli `flashcards`.
-2. Dodanie kolumny `created_at` w tabelach `generations` oraz `generations_error_logs` do śledzenia czasu utworzenia rekordów.
-3. Implementacja triggera do automatycznej aktualizacji pola `updated_at` w tabeli `flashcards`.
-4. Utworzenie indeksów na kolumnach kluczowych, takich jak `user_id` we wszystkich tabelach oraz `generation_id` w tabeli `flashcards` i `source_text_hash` w tabelach `generations` oraz `generations_error_logs`.
-5. Zdefiniowanie relacji między tabelami przy użyciu kluczy obcych oraz wdrożenie zasad RLS dla ochrony danych użytkowników.
-   </matched_recommendations>
+**Table: users**
 
-<database_planning_summary>
-Główne wymagania dotyczące schematu bazy danych obejmują rozdzielenie danych na cztery główne encje: użytkownicy (`users`), fiszki (`flashcards`), sesje generacji (`generations`) oraz logi błędów generacji (`generations_error_logs`).
-Kluczowe encje i ich relacje:
+This table is managed by Supabase Auth.
 
-- Encja `users` (zarządzana przez Supabase) posiada UUID jako identyfikator i zawiera podstawowe dane użytkownika.
-- Encja `flashcards` zawiera informacje o fiszkach, w tym pola tekstowe `front` (do 200 znaków) i `back` (do 500 znaków) oraz kolumnę `source` z ograniczeniem CHECK. Fiszki są powiązane z użytkownikiem oraz – opcjonalnie – z generacją.
-- Encje `generations` oraz `generations_error_logs` przechowują historię generowania fiszek przez AI, w tym szczegóły modelu, metryki generacji oraz szczegóły błędów. Obie encje posiadają ograniczenie dla pola `source_text_length` (od 1000 do 10000).
-  Bezpieczeństwo i skalowalność:
-- Wdrożenie zasad RLS zapewni, że użytkownik uzyska dostęp tylko do swoich rekordów.
-- Indeksowanie kluczowych kolumn (`user_id`, `generation_id`, `source_text_hash`) zagwarantuje wydajność zapytań.
-- Użycie triggera dla automatycznej aktualizacji `updated_at` zapewni aktualność danych.
-  Wszystkie powyższe decyzje są zgodne z wymaganiami MVP i dają solidny fundament do dalszego rozwoju systemu.
-  </database_planning_summary>
+- id: UUID PRIMARY KEY
+- email: VARCHAR NOT NULL UNIQUE
+- encrypted_password: VARCHAR NOT NULL
+- created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
+- confirmed_at: TIMESTAMPTZ
 
-<unresolved_issues>
-Brak nierozwiązanych kwestii – obecne decyzje i zalecenia są kompletne na potrzeby MVP.
-</unresolved_issues>
-</conversation_summary>
+---
+
+**Table: flashcards**
+
+- id: BIGSERIAL PRIMARY KEY
+- front: VARCHAR(200) NOT NULL
+- back: VARCHAR(500) NOT NULL
+- source: VARCHAR NOT NULL CHECK (source IN ('ai-full', 'ai-edited', 'manual'))
+- created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
+- updated_at: TIMESTAMPTZ NOT NULL DEFAULT now()
+- generation_id: BIGINT REFERENCES generations(id) ON DELETE SET NULL
+- user_id: UUID NOT NULL REFERENCES users(id)
+
+_Trigger: Automatically update the `updated_at` column on record updates._
+
+---
+
+**Table: generations**
+
+- id: BIGSERIAL PRIMARY KEY
+- user_id: UUID NOT NULL REFERENCES users(id)
+- model: VARCHAR NOT NULL
+- generated_count: INTEGER NOT NULL
+- accepted_unedited_count: INTEGER NULLABLE
+- accepted_edited_count: INTEGER NULLABLE
+- source_text_hash: VARCHAR NOT NULL
+- source_text_length: INTEGER NOT NULL CHECK (source_text_length BETWEEN 1000 AND 10000)
+- generation_duration: INTEGER NOT NULL
+- created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
+- updated_at: TIMESTAMPTZ NOT NULL DEFAULT now()
+
+---
+
+**Table: generation_error_logs**
+
+- id: BIGSERIAL PRIMARY KEY
+- user_id: UUID NOT NULL REFERENCES users(id)
+- model: VARCHAR NOT NULL
+- source_text_hash: VARCHAR NOT NULL
+- source_text_length: INTEGER NOT NULL CHECK (source_text_length BETWEEN 1000 AND 10000)
+- error_code: VARCHAR NOT NULL
+- error_message: TEXT NOT NULL
+- created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
+
+2. Relationships
+
+- One user (users) has many flashcards.
+- One user (users) has many records in generations table.
+- One user (users) has many records in generation_error_logs table.
+- Each flashcard (flashcards) can optionally be linked to one generation (generations) via flashcards.generation_id.
+
+3. Indexes
+
+- INDEX on flashcards.user_id
+- INDEX on flashcards.generation_id
+- INDEX on generations.user_id
+- INDEX on generation_error_logs.user_id
+
+4. Triggers
+
+- A trigger on the flashcards table to automatically update the updated_at column on every update.
+
+5. PostgreSQL Row-Level Security (RLS)
+
+- In flashards, generations and generation_error_logs tables implement RLS policies that allow a user to only access records where `user_id` matches a Supabase Auth user ID (e.g. auth.uid() = user_id)
+  \*/
