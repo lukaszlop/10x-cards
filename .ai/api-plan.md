@@ -129,7 +129,7 @@
     ```json
     {
       "generation_id": 1,
-      "flashcardsProposals": [
+      "flashcards_proposals": [
         { "front": "Generated Question 1", "back": "Generated Answer 1", "source": "ai-full" },
         ...
       ],

@@ -100,7 +100,7 @@ export interface GenerationFlashcardProposal {
  */
 export interface GenerationDTO {
   generation_id: number;
-  flashcardsProposals: GenerationFlashcardProposal[];
+  flashcards_proposals: GenerationFlashcardProposal[];
   generated_count: number;
   flashcards?: FlashcardResponseDTO[];
 }
