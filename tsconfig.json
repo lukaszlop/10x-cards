@@ -8,6 +8,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": ["astro/client"],
+    "typeRoots": ["./src/types"]
   }
 }
