@@ -110,3 +110,48 @@ export interface GenerationDTO {
  * It is directly derived from the generation_error_logs table row in the database.
  */
 export type GenerationErrorLogDTO = Tables<"generation_error_logs">;
+
+// Frontend-specific ViewModels
+
+/**
+ * ProposalViewModel represents a flashcard proposal in the UI.
+ * It extends the data from the API with UI state, including edited and accepted flags.
+ */
+export interface ProposalViewModel {
+  /** A unique client-side identifier for React keys and easier state management. */
+  id: string;
+  /** The original front text of the flashcard from the API. */
+  originalFront: string;
+  /** The original back text of the flashcard from the API. */
+  originalBack: string;
+  /** The current front text of the flashcard, which can be edited by the user. */
+  currentFront: string;
+  /** The current back text of the flashcard, which can be edited by the user. */
+  currentBack: string;
+  /** A flag that is set to `true` if `currentFront !== originalFront` or `currentBack !== originalBack`. Initially `false`. */
+  isEdited: boolean;
+  /** A flag indicating whether the user has accepted this proposal for saving. */
+  isAccepted: boolean;
+  /** Stores the `generation_id` associated with this proposal, important for saving. */
+  generation_id_internal?: number;
+}
+
+/**
+ * GenerationViewState aggregates all the state needed for the GenerationsView.
+ */
+export interface GenerationViewState {
+  /** The source text entered by the user in the FlashcardGenerationForm. */
+  sourceText: string;
+  /** A flag indicating that flashcard proposals are being fetched from the API. */
+  isLoadingProposals: boolean;
+  /** A flag indicating that flashcards are being saved to the API. */
+  isSavingFlashcards: boolean;
+  /** The list of currently displayed/modified flashcard proposals. */
+  proposals: ProposalViewModel[];
+  /** The ID of the last successful generation, retrieved from the API response. */
+  generationId: number | null;
+  /** A global error message for the view (e.g., API error). */
+  error: string | null;
+  /** The index of the proposal currently being edited in the modal. */
+  editingProposalIndex: number | null;
+}
