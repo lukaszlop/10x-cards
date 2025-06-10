@@ -112,8 +112,6 @@ Główne scenariusze błędów oraz proponowane podejścia:
 ## 6. Kwestie bezpieczeństwa
 
 - **Przechowywanie danych uwierzytelniających:** Używanie zmiennych środowiskowych do przechowywania klucza API.
-- **Bezpieczna komunikacja:** Korzystanie z HTTPS i bibliotek wspierających TLS.
-- **Weryfikacja wejścia:** Walidacja wszystkich danych wejściowych pod kątem potencjalnych ataków (np. SQL Injection, XSS).
 - **Ograniczone logowanie:** Unikanie zapisywania wrażliwych danych w logach, zwłaszcza w środowisku produkcyjnym.
 
 ## 7. Plan wdrożenia krok po kroku
