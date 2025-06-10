@@ -9,6 +9,7 @@
 - [Available Scripts](#available-scripts)
 - [Project Scope](#project-scope)
 - [Project Status](#project-status)
+- [Services](#services)
 - [License](#license)
 
 ## Project Name
@@ -95,6 +96,63 @@
 ## Project Status
 
 The project is currently in its MVP stage, focusing on core functionalities such as flashcard generation, user management, and essential spaced repetition. Future iterations may expand on the features and refine the user experience based on feedback.
+
+## Services
+
+### OpenRouter Service
+
+The OpenRouter Service (`src/lib/openrouter.service.ts`) is responsible for communicating with the OpenRouter API to generate AI-powered responses. It provides a robust interface for sending messages and receiving structured responses.
+
+#### Features
+
+- Structured JSON responses with validation
+- Automatic retry mechanism with exponential backoff
+- Comprehensive error handling and logging
+- Configurable system messages and model parameters
+- Type-safe API using TypeScript
+
+#### Usage Example
+
+```typescript
+// Initialize the service
+const openRouterService = new OpenRouterService({
+  supabase, // Supabase client instance
+  userId, // Current user ID
+});
+
+// Configure the service (optional)
+openRouterService.setSystemMessage("You are an expert flashcard creator.");
+openRouterService.updateModelConfig({
+  name: "openai/gpt-4o-mini",
+  temperature: 0.7,
+  max_tokens: 150,
+  top_p: 0.9,
+});
+
+// Send a message and get response
+try {
+  const response = await openRouterService.sendMessage("Create a flashcard about photosynthesis.");
+  console.log(response);
+  // {
+  //   answer: "Front: What is photosynthesis?\nBack: The process by which plants convert light energy into chemical energy to produce glucose from CO2 and water.",
+  //   confidence: 0.95
+  // }
+} catch (error) {
+  console.error("Failed to generate response:", error);
+}
+```
+
+#### Error Handling
+
+The service includes comprehensive error handling for various scenarios:
+
+- Network errors with automatic retry
+- Authentication failures
+- Rate limiting
+- Invalid responses
+- Internal service errors
+
+All errors are automatically logged to the `generation_error_logs` table in Supabase for monitoring and debugging.
 
 ## License
 

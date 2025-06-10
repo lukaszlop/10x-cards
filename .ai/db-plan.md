@@ -42,8 +42,11 @@ _Trigger: Automatically update the `updated_at` column on record updates._
 - source_text_hash: VARCHAR NOT NULL
 - source_text_length: INTEGER NOT NULL CHECK (source_text_length BETWEEN 1000 AND 10000)
 - generation_duration: INTEGER NOT NULL
+- confidence_score: DECIMAL(3,2) NOT NULL CHECK (confidence_score BETWEEN 0 AND 1)
 - created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
 - updated_at: TIMESTAMPTZ NOT NULL DEFAULT now()
+
+_Note: The confidence_score is a value between 0 and 1 returned by the LLM API indicating how confident the model is about its generated flashcards. Higher values indicate greater confidence._
 
 ---
 
@@ -71,6 +74,7 @@ _Trigger: Automatically update the `updated_at` column on record updates._
 - INDEX on flashcards.generation_id
 - INDEX on generations.user_id
 - INDEX on generation_error_logs.user_id
+- INDEX on generations.confidence_score
 
 4. Triggers
 

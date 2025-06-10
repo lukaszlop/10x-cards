@@ -36,7 +36,8 @@ Ten endpoint umożliwia przesłanie tekstu wejściowego, którego długość mie
   {
     "generation_id": 123,
     "flashcards_proposals": [{ "front": "Generated Question", "back": "Generation answer", "source": "ai-full" }],
-    "generated_count": 5
+    "generated_count": 5,
+    "confidence_score": 0.95
   }
   ```
 
@@ -53,12 +54,14 @@ Ten endpoint umożliwia przesłanie tekstu wejściowego, którego długość mie
 4. Logika biznesowa:
    - Wywołanie usługi (service layer `generation.service`), która:
      a. Wywołuje zewnętrzne API LLM w celu generacji propozycji fiszek.
-     b. Mierzy czas trwania generacji.
-     c. Tworzy rekord w tabeli `generations` z odpowiednimi metadanymi (model, generated_count, source_text_hash, source_text_length, generation_duration).
+     b. Otrzymuje odpowiedź zawierającą propozycje fiszek i wartość confidence_score.
+     c. Mierzy czas trwania generacji.
+     d. Tworzy rekord w tabeli `generations` z odpowiednimi metadanymi (model, generated_count, source_text_hash, source_text_length, generation_duration, confidence_score).
 5. W przypadku sukcesu, zwracana jest odpowiedź zawierająca:
    - generation_id
    - flashcards_proposals (tablica propozycji fiszek)
    - generated_count
+   - confidence_score (wartość między 0 a 1 wskazująca na pewność modelu)
 6. W przypadku niepowodzenia wywołania API LLM:
    - Logowanie błędu do tabeli `generation_error_logs`
    - Zwrócenie odpowiedniego komunikatu o błędzie
@@ -82,6 +85,7 @@ Ten endpoint umożliwia przesłanie tekstu wejściowego, którego długość mie
 - Zewnętrzne API LLM może generować opóźnienia; rozważ asynchroniczne przetwarzanie lub mechanizm kolejkowania zadań.
 - Monitorowanie czasu wykonania generacji i optymalizacja zapytań do bazy danych.
 - Możliwość skalowania usługi poprzez rozdzielenie logiki generacji i zapisu danych.
+- Monitorowanie wartości confidence_score dla różnych typów tekstów wejściowych w celu optymalizacji jakości generowanych fiszek.
 
 ## 8. Etapy wdrożenia
 
@@ -89,7 +93,8 @@ Ten endpoint umożliwia przesłanie tekstu wejściowego, którego długość mie
 2. Implementacja walidacji wejściowej przy użyciu biblioteki `zod`, zgodnie z zasadami: długość `source_text` pomiędzy 1000 a 10000 znaków.
 3. Dodanie logiki uwierzytelniania korzystającej z supabase z context.locals.
 4. Wyodrębnienie logiki biznesowej do warstwy serwisowej (service layer `generation.service`) odpowiedzialnej za:
-   - Wywołanie zewnętrznego API LLM. Na etapie developmentu skorzystamy z mocków zamiast wywoływać serwis AI.
+   - Wywołanie zewnętrznego API LLM
+   - Przetwarzanie odpowiedzi, w tym wartości confidence_score
    - Mierzenie czasu generacji
    - Zapis rekordu w tabeli `generations`
 5. Implementacja mechanizmu logowania błędów w przypadku niepowodzenia wywołania API poprzez zapis do tabeli `generation_error_logs`.
@@ -97,5 +102,6 @@ Ten endpoint umożliwia przesłanie tekstu wejściowego, którego długość mie
    - generation_id
    - flashcards_proposals
    - generated_count
+   - confidence_score
 7. Code review, audyt bezpieczeństwa i dokumentacja.
    \*/

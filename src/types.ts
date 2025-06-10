@@ -102,6 +102,7 @@ export interface GenerationDTO {
   generation_id: number;
   flashcards_proposals: GenerationFlashcardProposal[];
   generated_count: number;
+  confidence_score: number;
   flashcards?: FlashcardResponseDTO[];
 }
 

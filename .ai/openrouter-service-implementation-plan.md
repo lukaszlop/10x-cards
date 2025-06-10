@@ -7,6 +7,7 @@ Usługa OpenRouter to moduł integrujący interfejs API OpenRouter w celu uzupe�
 1. Wysyłanie zapytań do OpenRouter API wykorzystujących komunikaty systemowe oraz użytkownika.
 2. Odbieranie i walidacja ustrukturyzowanych odpowiedzi, zgodnych z zadanym schematem JSON.
 3. Dynamiczne ustawianie parametrów modelu, takich jak nazwa modelu i parametry operacyjne (np. temperature, max_tokens).
+4. Przetwarzanie i walidacja wartości confidence_score zwracanej przez API.
 
 ## 2. Opis konstruktora
 
@@ -30,7 +31,7 @@ Konstruktor usługi inicjuje podstawowe konfiguracje, w tym:
   }
   ```
 
-- Domyślną nazwę modelu (np. "openrouter-llm-002") oraz parametry modelu (np. { temperature: 0.7, max_tokens: 150, top_p: 0.9 }).
+- Domyślną nazwę modelu (np. "openai/gpt-4o-mini") oraz parametry modelu (np. { temperature: 0.7, max_tokens: 1000, top_p: 0.9 }).
 
 ## 3. Publiczne metody i pola
 
@@ -38,6 +39,7 @@ Konstruktor usługi inicjuje podstawowe konfiguracje, w tym:
 
    - Wysyła komunikat użytkownika wraz z domyślnym komunikatem systemowym do OpenRouter API.
    - Łączy komunikaty w jeden ładunek, wykorzystując ustawiony `response_format`, nazwę modelu i parametry modelu.
+   - Zwraca odpowiedź zawierającą wygenerowany tekst oraz wartość confidence_score.
 
 2. **setSystemMessage(message: string): void**
 
@@ -76,6 +78,7 @@ Konstruktor usługi inicjuje podstawowe konfiguracje, w tym:
 3. **parseResponse(response: any): ParsedResponse**
 
    - Waliduje otrzymaną odpowiedź według skonfigurowanego schematu JSON.
+   - Wyodrębnia i waliduje wartość confidence_score (0-1) z odpowiedzi.
    - W przypadku niezgodności lub błędów, przekazuje informację do modułu obsługi błędów.
 
 4. **handleError(error: any): void**
@@ -102,7 +105,7 @@ Główne scenariusze błędów oraz proponowane podejścia:
 
 4. **Nieprawidłowy format odpowiedzi**
 
-   - Problem: Odpowiedź nie spełnia oczekiwanego schematu JSON.
+   - Problem: Odpowiedź nie spełnia oczekiwanego schematu JSON lub zawiera nieprawidłową wartość confidence_score.
    - Rozwiązanie: Weryfikacja odpowiedzi przy użyciu walidatora schematów, fallback do trybu awaryjnego oraz zgłaszanie błędu.
 
 5. **Błędy wewnętrzne serwisu**
@@ -113,6 +116,7 @@ Główne scenariusze błędów oraz proponowane podejścia:
 
 - **Przechowywanie danych uwierzytelniających:** Używanie zmiennych środowiskowych do przechowywania klucza API.
 - **Ograniczone logowanie:** Unikanie zapisywania wrażliwych danych w logach, zwłaszcza w środowisku produkcyjnym.
+- **Walidacja confidence_score:** Upewnienie się, że wartość mieści się w zakresie 0-1 przed zapisem do bazy danych.
 
 ## 7. Plan wdrożenia krok po kroku
 
@@ -154,13 +158,16 @@ Główne scenariusze błędów oraz proponowane podejścia:
 
    - Wysłanie przygotowanego żądania do OpenRouter API przy wykorzystaniu `apiClient`.
    - Obsługa asynchroniczna odpowiedzi.
+   - Walidacja i przetwarzanie wartości confidence_score.
 
 6. **Implementacja metody parseResponse**
 
    - Walidacja i przetwarzanie odpowiedzi przy użyciu zdefiniowanego schematu JSON.
+   - Upewnienie się, że confidence_score mieści się w zakresie 0-1.
    - Przekazanie błędów do centralnej obsługi w razie niezgodności.
 
 7. **Wdrożenie centralnej obsługi błędów**
 
    - Implementacja metody `handleError` obsługującej wszystkie zdefiniowane scenariusze błędów.
    - Logowanie i komunikacja błędów zgodnie z najlepszymi praktykami.
+   - Dodanie specjalnej obsługi błędów związanych z nieprawidłowymi wartościami confidence_score.

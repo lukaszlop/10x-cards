@@ -28,9 +28,11 @@ export function FlashcardProposalItem({ proposal, index, onUpdate, onToggleAccep
 
   return (
     <>
-      <Card className="flex flex-col h-[300px]">
-        {proposal.isEdited && <p className="text-sm font-medium text-blue-500 mx-6 mb-[-44px]">Edytowano</p>}
-        <CardContent className="flex-grow mt-2 pt-6 space-y-4 overflow-y-auto">
+      <Card className="flex flex-col h-[350px]">
+        {proposal.isEdited && (
+          <p className="text-sm font-medium text-blue-500 block z-1 bg-white mx-6 mb-[-44px]">Edytowano</p>
+        )}
+        <CardContent className="flex-grow mt-2 pt-6 space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar-thumb-rounded-full scrollbar-track-rounded-full ">
           <div>
             <h3 className="text-sm font-medium text-gray-500">Przód fiszki</h3>
 
