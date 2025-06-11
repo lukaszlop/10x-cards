@@ -141,3 +141,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
   }
 };
+
+export const DELETE: APIRoute = async () => {
+  return new Response(
+    JSON.stringify({
+      error: "Flashcard ID is required for deletion. Use DELETE /api/flashcards/{id} instead.",
+    }),
+    {
+      status: 400,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+};
