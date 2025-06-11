@@ -1,6 +1,7 @@
 // DTO and Command Model definitions for the API
 // Import base database type helpers from the database models
 import type { Tables } from "./db/database.types";
+import type { GetFlashcardsQuerySchema } from "./lib/schemas/flashcard.schema";
 
 /**
  * FlashcardResponseDTO represents a flashcard as retrieved from the database.
@@ -24,6 +25,9 @@ export interface FlashcardsResponseDTO {
   data: FlashcardResponseDTO[];
   pagination: PaginationDTO;
 }
+
+// Re-export the query schema type
+export type { GetFlashcardsQuerySchema };
 
 export type Source = "ai-full" | "ai-edited" | "manual";
 

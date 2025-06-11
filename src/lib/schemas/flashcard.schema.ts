@@ -30,5 +30,16 @@ export const createFlashcardsSchema = z.object({
     .max(100, "Maximum 100 flashcards can be created at once"),
 });
 
-// Typ inferowany ze schematu
+// Schemat dla parametrów zapytania GET /flashcards
+export const getFlashcardsQuerySchema = z.object({
+  page: z.coerce.number().positive().default(1),
+  limit: z.coerce.number().min(1).max(100).default(10),
+  sort: z.enum(["created_at", "updated_at", "front", "back"]).default("created_at"),
+  order: z.enum(["asc", "desc"]).default("desc"),
+  source: z.enum(["manual", "ai-full", "ai-edited"]).optional(),
+  generation_id: z.coerce.number().positive().optional(),
+});
+
+// Typy inferowane ze schematów
 export type CreateFlashcardsSchema = z.infer<typeof createFlashcardsSchema>;
+export type GetFlashcardsQuerySchema = z.infer<typeof getFlashcardsQuerySchema>;

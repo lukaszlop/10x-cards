@@ -1,9 +1,67 @@
 import type { APIRoute } from "astro";
 import { DEFAULT_USER_ID } from "../../db/supabase.client";
-import { createFlashcardsSchema } from "../../lib/schemas/flashcard.schema";
+import { createFlashcardsSchema, getFlashcardsQuerySchema } from "../../lib/schemas/flashcard.schema";
 import { FlashcardService } from "../../lib/services/flashcard.service";
 
 export const prerender = false;
+
+export const GET: APIRoute = async ({ url, locals }) => {
+  try {
+    // Parse and validate query parameters
+    const searchParams = Object.fromEntries(url.searchParams.entries());
+    const validationResult = getFlashcardsQuerySchema.safeParse(searchParams);
+
+    if (!validationResult.success) {
+      console.warn("Validation failed for flashcards query parameters:", {
+        errors: validationResult.error.errors,
+        userId: DEFAULT_USER_ID,
+      });
+      return new Response(
+        JSON.stringify({
+          error: "Invalid query parameters",
+          details: validationResult.error.errors,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Create service instance and fetch flashcards
+    const flashcardService = new FlashcardService(locals.supabase);
+    const response = await flashcardService.getFlashcards(DEFAULT_USER_ID, validationResult.data);
+
+    // Return the paginated response
+    return new Response(JSON.stringify(response), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    // Detailed error logging
+    console.error("Unexpected error while fetching flashcards:", {
+      error:
+        error instanceof Error
+          ? {
+              message: error.message,
+              stack: error.stack,
+            }
+          : error,
+      timestamp: new Date().toISOString(),
+    });
+
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        requestId: Date.now().toString(36),
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+};
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {

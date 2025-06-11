@@ -1,5 +1,10 @@
 import type { SupabaseClient } from "../../db/supabase.client";
-import type { CreateFlashcardDTO, FlashcardResponseDTO } from "../../types";
+import type {
+  CreateFlashcardDTO,
+  FlashcardResponseDTO,
+  FlashcardsResponseDTO,
+  GetFlashcardsQuerySchema,
+} from "../../types";
 
 export class FlashcardService {
   constructor(private readonly supabase: SupabaseClient) {}
@@ -31,5 +36,54 @@ export class FlashcardService {
     }
 
     return data as FlashcardResponseDTO[];
+  }
+
+  /**
+   * Retrieves paginated flashcards for a given user with optional filtering and sorting
+   * @param userId - The ID of the user retrieving flashcards
+   * @param params - Query parameters for pagination, sorting and filtering
+   * @returns Paginated flashcards response
+   * @throws Error if database operation fails
+   */
+  async getFlashcards(userId: string, params: GetFlashcardsQuerySchema): Promise<FlashcardsResponseDTO> {
+    const { page, limit, sort, order, source, generation_id } = params;
+    const offset = (page - 1) * limit;
+
+    // Start building the query
+    let query = this.supabase
+      .from("flashcards")
+      .select("*", { count: "exact" })
+      .eq("user_id", userId)
+      .order(sort, { ascending: order === "asc" })
+      .range(offset, offset + limit - 1);
+
+    // Apply optional filters
+    if (source) {
+      query = query.eq("source", source);
+    }
+    if (generation_id) {
+      query = query.eq("generation_id", generation_id);
+    }
+
+    // Execute the query
+    const { data, error, count } = await query;
+
+    if (error) {
+      console.error("Database error while fetching flashcards:", {
+        error,
+        userId,
+        params,
+      });
+      throw new Error(`Failed to fetch flashcards: ${error.message}`);
+    }
+
+    return {
+      data: data as FlashcardResponseDTO[],
+      pagination: {
+        page,
+        limit,
+        total: count ?? 0,
+      },
+    };
   }
 }
