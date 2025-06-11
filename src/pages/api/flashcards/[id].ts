@@ -15,6 +15,14 @@ const flashcardResponseSchema = z.object({
   updated_at: z.string(),
 }) satisfies z.ZodType<FlashcardResponseDTO>;
 
+// Validation schema for the request body
+const updateFlashcardSchema = z.object({
+  front: z.string().max(200, "Front text cannot exceed 200 characters").optional(),
+  back: z.string().max(500, "Back text cannot exceed 500 characters").optional(),
+  source: z.enum(["ai-edited", "manual"] as const).optional(),
+  generation_id: z.number().optional(),
+});
+
 export const GET: APIRoute = async ({ params, locals }): Promise<Response> => {
   const requestStartTime = Date.now();
 
@@ -171,5 +179,83 @@ export const GET: APIRoute = async ({ params, locals }): Promise<Response> => {
         headers: { "Content-Type": "application/json" },
       }
     );
+  }
+};
+
+export const PUT: APIRoute = async ({ params, request, locals }) => {
+  try {
+    // 1. Extract and validate the flashcard ID
+    const flashcardId = params.id;
+    if (!flashcardId || isNaN(Number(flashcardId))) {
+      return new Response(JSON.stringify({ error: "Invalid flashcard ID" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const numericFlashcardId = Number(flashcardId);
+
+    // 2. Parse and validate request body
+    const body = await request.json();
+    const validationResult = updateFlashcardSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Invalid request data",
+          details: validationResult.error.errors,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const { data: validatedData } = validationResult;
+
+    // 3. Check if flashcard exists
+    const { data: existingFlashcard, error: fetchError } = await locals.supabase
+      .from("flashcards")
+      .select()
+      .eq("id", numericFlashcardId)
+      .eq("user_id", DEFAULT_USER_ID)
+      .single();
+
+    if (fetchError || !existingFlashcard) {
+      return new Response(JSON.stringify({ error: "Flashcard not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // 4. Update the flashcard
+    const { data: updatedFlashcard, error: updateError } = await locals.supabase
+      .from("flashcards")
+      .update(validatedData)
+      .eq("id", numericFlashcardId)
+      .eq("user_id", DEFAULT_USER_ID)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error("Error updating flashcard:", updateError);
+      return new Response(JSON.stringify({ error: "Failed to update flashcard" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // 5. Return the updated flashcard
+    return new Response(JSON.stringify(updatedFlashcard), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Error updating flashcard:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
