@@ -82,7 +82,7 @@ export function EditFlashcardModal({ isOpen, onClose, proposal, onSave }: EditFl
                 ({editedFront.length}/200 znaków)
               </span>
             </label>
-            <Textarea value={editedFront} onChange={handleFrontChange} className="min-h-[150px] resize-y" />
+            <Textarea value={editedFront} onChange={handleFrontChange} className="min-h-[150px] resize-none" />
             {validationErrors.front && <p className="text-sm text-red-500">{validationErrors.front}</p>}
           </div>
           <div className="space-y-2">
@@ -92,7 +92,7 @@ export function EditFlashcardModal({ isOpen, onClose, proposal, onSave }: EditFl
                 ({editedBack.length}/500 znaków)
               </span>
             </label>
-            <Textarea value={editedBack} onChange={handleBackChange} className="min-h-[150px] resize-y " />
+            <Textarea value={editedBack} onChange={handleBackChange} className="min-h-[150px] resize-none" />
             {validationErrors.back && <p className="text-sm text-red-500">{validationErrors.back}</p>}
           </div>
         </div>

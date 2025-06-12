@@ -160,3 +160,18 @@ export interface GenerationViewState {
   /** The index of the proposal currently being edited in the modal. */
   editingProposalIndex: number | null;
 }
+
+/**
+ * FlashcardsViewState represents the state of the flashcards view component.
+ * It includes the list of flashcards, loading state, error state, and modal states.
+ */
+export interface FlashcardsViewState {
+  flashcards: FlashcardResponseDTO[];
+  isLoading: boolean;
+  error: string | null;
+  isModalOpen: boolean;
+  modalMode: "create" | "edit" | null;
+  editingFlashcard: FlashcardResponseDTO | null;
+  isDeleteDialogOpen: boolean;
+  deletingFlashcardId: number | null;
+}
