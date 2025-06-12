@@ -92,3 +92,28 @@ W celu reużywalności kodu, w `src/db/` zostanie utworzony plik `supabase.ts` (
   1. `ResetPasswordForm.tsx` wywoła `supabase.auth.resetPasswordForEmail()`.
   2. Użytkownik, po przejściu na stronę `/update-password` z linku, w komponencie `UpdatePasswordForm.tsx` wywoła `supabase.auth.updateUser()`, aby ustawić nowe hasło.
 - **Śledzenie stanu autentykacji na kliencie**: Komponenty React (głównie `Navigation.tsx`) będą używać hooka `supabase.auth.onAuthStateChange()`, aby dynamicznie reagować na zmiany stanu zalogowania (np. po zalogowaniu w innej karcie przeglądarki).
+
+## 4. Mapowanie na historyjki użytkownika (User Stories)
+
+Poniższa sekcja potwierdza, że architektura opisana w tym dokumencie w pełni pokrywa wymagania zdefiniowane w `@prd.md`.
+
+**ID: US-001 - Rejestracja konta**
+
+- **Realizacja**:
+  - Strona `src/pages/register.astro` i komponent `src/components/auth/RegisterForm.tsx` (formularz email/hasło).
+  - Wywołanie `supabase.auth.signUp()` z mechanizmem potwierdzenia email.
+  - Endpoint `src/pages/api/auth/callback.ts` do finalizacji sesji po kliknięciu w link weryfikacyjny, co skutkuje zalogowaniem użytkownika.
+
+**ID: US-002 - Logowanie do aplikacji**
+
+- **Realizacja**:
+  - Strona `src/pages/login.astro` i komponent `src/components/auth/LoginForm.tsx` (formularz logowania).
+  - Komponent `src/components/Navigation.tsx` warunkowo wyświetlający opcje "Zaloguj" / "Wyloguj".
+  - Proces odzyskiwania hasła realizowany przez strony `/reset-password` i `/update-password` oraz odpowiadające im komponenty React.
+  - Przekierowanie do widoku generowania (`/generations`) po udanym logowaniu.
+
+**ID: US-009 - Bezpieczny dostęp i autoryzacja**
+
+- **Realizacja**:
+  - Middleware `src/middleware/index.ts` chroniący trasy wymagające autentykacji.
+  - Polityki Row Level Security (RLS) w bazie danych Supabase na tabeli `flashcards`, ograniczające dostęp do danych wyłącznie do ich właściciela (`auth.uid() = user_id`).
