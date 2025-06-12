@@ -68,7 +68,7 @@ Architektura interfejsu użytkownika opiera się na widoku generowania fiszek do
 ## 4. Układ i struktura nawigacji
 
 - Nawigacja główna będzie dostępna jako górne menu w layoucie strony po zalogowaniu.
-- Linki nawigacyjne obejmują: "Generowanie fiszek", "Moje fiszki", "Sesja nauki", "Profil" oraz przycisk wylogowania.
+- Linki nawigacyjne obejmują: "Generowanie fiszek", "Moje fiszki", "Profil" oraz przycisk wylogowania.
 - Dla urządzeń mobilnych wdrożone zostanie hamburger menu z responsywnym rozkładem.
 - Nawigacja umożliwia bezproblemowe przechodzenie między widokami, zachowując kontekst użytkownika oraz jego dane sesyjne.
 

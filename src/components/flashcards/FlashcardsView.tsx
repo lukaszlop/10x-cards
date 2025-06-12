@@ -79,7 +79,7 @@ export function FlashcardsView() {
   // Form submission handlers
   const handleSubmit = async (data: UpdateFlashcardDTO) => {
     if (!data.front || !data.back) {
-      toast.error("Front and back are required");
+      toast.error("Przód fiszki i tył fiszki są wymagane");
       return;
     }
 
@@ -110,7 +110,7 @@ export function FlashcardsView() {
       handleCloseModal();
     } catch (error) {
       console.error("Failed to save flashcard:", error);
-      toast.error("Failed to save flashcard. Please try again.");
+      toast.error("Nie udało się zapisać fiszki. Spróbuj ponownie.");
     }
   };
 
@@ -119,11 +119,11 @@ export function FlashcardsView() {
 
     try {
       await removeFlashcard(state.deletingFlashcardId);
-      toast.success("Flashcard deleted successfully");
+      toast.success("Fiszka została usunięta");
       handleCloseDeleteDialog();
     } catch (error) {
       console.error("Failed to delete flashcard:", error);
-      toast.error("Failed to delete flashcard. Please try again.");
+      toast.error("Nie udało się usunąć fiszki. Spróbuj ponownie.");
     }
   };
 

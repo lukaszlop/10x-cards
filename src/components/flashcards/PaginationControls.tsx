@@ -37,7 +37,7 @@ export function PaginationControls({
         </Select>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-6 pl-2">
         <div className="text-sm text-muted-foreground">
           Strona {currentPage} z {totalPages}
         </div>
