@@ -88,7 +88,7 @@ export function FlashcardsView() {
         const newFlashcard: ManualFlashcardDTO = {
           front: data.front,
           back: data.back,
-          source: "manual" as const,
+          source: "manual",
           generation_id: null,
         };
         await addFlashcard(newFlashcard);

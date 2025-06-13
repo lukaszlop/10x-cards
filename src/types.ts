@@ -36,23 +36,22 @@ export type Source = "ai-full" | "ai-edited" | "manual";
  * For manual flashcards, generation_id must be null.
  * For AI-generated flashcards, generation_id is required.
  */
-export interface ManualFlashcardDTO {
+export interface BaseFlashcardDTO {
   front: string;
   back: string;
-  source: Extract<Source, "manual">;
-  generation_id: null;
 }
 
-export interface AIFullFlashcardDTO {
-  front: string;
-  back: string;
+export interface ManualFlashcardDTO extends BaseFlashcardDTO {
+  source?: Extract<Source, "manual">;
+  generation_id?: null;
+}
+
+export interface AIFullFlashcardDTO extends BaseFlashcardDTO {
   source: Extract<Source, "ai-full">;
   generation_id: number;
 }
 
-export interface AIEditedFlashcardDTO {
-  front: string;
-  back: string;
+export interface AIEditedFlashcardDTO extends BaseFlashcardDTO {
   source: Extract<Source, "ai-edited">;
   generation_id: number;
 }

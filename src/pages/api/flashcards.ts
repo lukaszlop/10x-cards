@@ -1,157 +1,154 @@
 import type { APIRoute } from "astro";
-import { DEFAULT_USER_ID } from "../../db/supabase.client";
-import { createFlashcardsSchema, getFlashcardsQuerySchema } from "../../lib/schemas/flashcard.schema";
+import { z } from "zod";
 import { FlashcardService } from "../../lib/services/flashcard.service";
+import type { CreateFlashcardDTO } from "../../types";
 
-export const prerender = false;
+const singleFlashcardSchema = z.object({
+  front: z.string().min(1),
+  back: z.string().min(1),
+  source: z.enum(["manual", "ai-full", "ai-edited"]).optional().default("manual"),
+  generation_id: z.number().nullable().optional().default(null),
+});
 
-export const GET: APIRoute = async ({ url, locals }) => {
-  try {
-    // Parse and validate query parameters
-    const searchParams = Object.fromEntries(url.searchParams.entries());
-    const validationResult = getFlashcardsQuerySchema.safeParse(searchParams);
-
-    if (!validationResult.success) {
-      console.warn("Validation failed for flashcards query parameters:", {
-        errors: validationResult.error.errors,
-        userId: DEFAULT_USER_ID,
-      });
-      return new Response(
-        JSON.stringify({
-          error: "Invalid query parameters",
-          details: validationResult.error.errors,
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Create service instance and fetch flashcards
-    const flashcardService = new FlashcardService(locals.supabase);
-    const response = await flashcardService.getFlashcards(DEFAULT_USER_ID, validationResult.data);
-
-    // Return the paginated response
-    return new Response(JSON.stringify(response), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    // Detailed error logging
-    console.error("Unexpected error while fetching flashcards:", {
-      error:
-        error instanceof Error
-          ? {
-              message: error.message,
-              stack: error.stack,
-            }
-          : error,
-      timestamp: new Date().toISOString(),
-    });
-
-    return new Response(
-      JSON.stringify({
-        error: "Internal server error",
-        requestId: Date.now().toString(36),
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
-};
+const multipleFlashcardsSchema = z.object({
+  flashcards: z.array(singleFlashcardSchema),
+});
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // Parsuj body żądania
-    let body;
-    try {
-      body = await request.json();
-    } catch (error) {
-      console.error("Failed to parse request body:", error);
-      return new Response(
-        JSON.stringify({
-          error: "Invalid JSON in request body",
-          details: error instanceof Error ? error.message : "Unknown parsing error",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+    const { user, supabase } = locals;
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
-    // Waliduj dane wejściowe
-    const validationResult = createFlashcardsSchema.safeParse(body);
-    if (!validationResult.success) {
-      console.warn("Validation failed for flashcards creation:", {
-        errors: validationResult.error.errors,
-        userId: DEFAULT_USER_ID,
-      });
-      return new Response(
-        JSON.stringify({
-          error: "Validation failed",
-          details: validationResult.error.errors,
-        }),
-        {
-          status: 422,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
+    const body = await request.json();
+    const multipleResult = multipleFlashcardsSchema.safeParse(body);
 
-    // Utwórz instancję serwisu
-    const flashcardService = new FlashcardService(locals.supabase);
+    let flashcardsToCreate: CreateFlashcardDTO[];
 
-    // Zapisz fiszki w bazie
-    const createdFlashcards = await flashcardService.createFlashcards(
-      DEFAULT_USER_ID,
-      validationResult.data.flashcards
-    );
-
-    // Zwróć utworzone fiszki
-    return new Response(JSON.stringify({ flashcards: createdFlashcards }), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    // Szczegółowe logowanie błędu
-    console.error("Unexpected error while creating flashcards:", {
-      error:
-        error instanceof Error
-          ? {
-              message: error.message,
-              stack: error.stack,
-            }
-          : error,
-      timestamp: new Date().toISOString(),
-    });
-
-    return new Response(
-      JSON.stringify({
-        error: "Internal server error",
-        requestId: Date.now().toString(36), // Dodaj identyfikator żądania do śledzenia błędów
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
+    if (multipleResult.success) {
+      flashcardsToCreate = multipleResult.data.flashcards;
+    } else {
+      const singleResult = singleFlashcardSchema.safeParse(body);
+      if (singleResult.success) {
+        flashcardsToCreate = [singleResult.data];
+      } else {
+        return new Response(JSON.stringify({ error: "Invalid request body" }), { status: 400 });
       }
-    );
+    }
+
+    if (flashcardsToCreate.length === 0) {
+      return new Response(JSON.stringify({ error: "No flashcards to create" }), { status: 400 });
+    }
+
+    const flashcardService = new FlashcardService(supabase);
+    const createdFlashcards = await flashcardService.createFlashcards(user.id, flashcardsToCreate);
+
+    if (!createdFlashcards || createdFlashcards.length === 0) {
+      return new Response(JSON.stringify({ error: "Failed to create flashcard records." }), { status: 500 });
+    }
+
+    // Odpowiedź zależy od tego, czy tworzono jedną, czy wiele fiszek
+    const responseBody = createdFlashcards.length === 1 ? createdFlashcards[0] : createdFlashcards;
+    return new Response(JSON.stringify(responseBody), { status: 201 });
+  } catch (error) {
+    console.error("Error creating flashcard:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
   }
 };
 
-export const DELETE: APIRoute = async () => {
-  return new Response(
-    JSON.stringify({
-      error: "Flashcard ID is required for deletion. Use DELETE /api/flashcards/{id} instead.",
-    }),
-    {
-      status: 400,
-      headers: {
-        "Content-Type": "application/json",
-      },
+export const GET: APIRoute = async ({ url, locals }) => {
+  try {
+    const { user, supabase } = locals;
+
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
-  );
+
+    const searchParams = new URL(url).searchParams;
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const sort = searchParams.get("sort") || "created_at";
+    const order = searchParams.get("order") || "desc";
+
+    const validationResult = z
+      .object({
+        page: z.number().min(1),
+        limit: z.number().min(1).max(100),
+        sort: z.enum(["front", "back", "created_at", "updated_at"]),
+        order: z.enum(["asc", "desc"]),
+      })
+      .safeParse({ page, limit, sort, order });
+
+    if (!validationResult.success) {
+      return new Response(JSON.stringify({ error: validationResult.error }), { status: 400 });
+    }
+
+    const flashcardService = new FlashcardService(supabase);
+    const response = await flashcardService.getFlashcards(user.id, validationResult.data);
+
+    return new Response(JSON.stringify(response));
+  } catch (error) {
+    console.error("Error fetching flashcards:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+  }
+};
+
+export const PUT: APIRoute = async ({ request, locals }) => {
+  try {
+    const { user, supabase } = locals;
+
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    }
+
+    const body = await request.json();
+    const validationResult = z
+      .object({
+        id: z.number(),
+        front: z.string().min(1),
+        back: z.string().min(1),
+      })
+      .safeParse(body);
+
+    if (!validationResult.success) {
+      return new Response(JSON.stringify({ error: validationResult.error }), { status: 400 });
+    }
+
+    const flashcardService = new FlashcardService(supabase);
+    const flashcard = await flashcardService.updateFlashcard({
+      ...validationResult.data,
+      userId: user.id,
+    });
+
+    return new Response(JSON.stringify(flashcard));
+  } catch (error) {
+    console.error("Error updating flashcard:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+  }
+};
+
+export const DELETE: APIRoute = async ({ request, locals }) => {
+  try {
+    const { user, supabase } = locals;
+
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    }
+
+    const body = await request.json();
+    const validationResult = z.object({ id: z.number() }).safeParse(body);
+
+    if (!validationResult.success) {
+      return new Response(JSON.stringify({ error: validationResult.error }), { status: 400 });
+    }
+
+    const flashcardService = new FlashcardService(supabase);
+    await flashcardService.deleteFlashcard(validationResult.data.id, user.id);
+
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    console.error("Error deleting flashcard:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+  }
 };

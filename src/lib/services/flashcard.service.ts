@@ -21,6 +21,8 @@ export class FlashcardService {
     const flashcardsWithUserId = flashcards.map((flashcard) => ({
       ...flashcard,
       user_id: userId,
+      source: flashcard.source ?? "manual",
+      generation_id: flashcard.generation_id ?? null,
     }));
 
     // Wykonaj batch insert
@@ -46,10 +48,9 @@ export class FlashcardService {
    * @throws Error if database operation fails
    */
   async getFlashcards(userId: string, params: GetFlashcardsQuerySchema): Promise<FlashcardsResponseDTO> {
-    const { page, limit, sort, order, source, generation_id } = params;
+    const { page = 1, limit = 10, sort = "created_at", order = "desc" } = params;
     const offset = (page - 1) * limit;
 
-    // Start building the query
     let query = this.supabase
       .from("flashcards")
       .select("*", { count: "exact" })
@@ -57,23 +58,17 @@ export class FlashcardService {
       .order(sort, { ascending: order === "asc" })
       .range(offset, offset + limit - 1);
 
-    // Apply optional filters
-    if (source) {
-      query = query.eq("source", source);
+    if (params.source) {
+      query = query.eq("source", params.source);
     }
-    if (generation_id) {
-      query = query.eq("generation_id", generation_id);
+    if (params.generation_id) {
+      query = query.eq("generation_id", params.generation_id);
     }
 
-    // Execute the query
     const { data, error, count } = await query;
 
     if (error) {
-      console.error("Database error while fetching flashcards:", {
-        error,
-        userId,
-        params,
-      });
+      console.error("Database error while fetching flashcards:", error);
       throw new Error(`Failed to fetch flashcards: ${error.message}`);
     }
 
@@ -85,5 +80,39 @@ export class FlashcardService {
         total: count ?? 0,
       },
     };
+  }
+
+  async updateFlashcard(data: {
+    id: number;
+    front: string;
+    back: string;
+    userId: string;
+  }): Promise<FlashcardResponseDTO> {
+    const { data: flashcard, error } = await this.supabase
+      .from("flashcards")
+      .update({
+        front: data.front,
+        back: data.back,
+      })
+      .eq("id", data.id)
+      .eq("user_id", data.userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Database error while updating flashcard:", error);
+      throw new Error(`Failed to update flashcard: ${error.message}`);
+    }
+
+    return flashcard as FlashcardResponseDTO;
+  }
+
+  async deleteFlashcard(id: number, userId: string): Promise<void> {
+    const { error } = await this.supabase.from("flashcards").delete().eq("id", id).eq("user_id", userId);
+
+    if (error) {
+      console.error("Database error while deleting flashcard:", error);
+      throw new Error(`Failed to delete flashcard: ${error.message}`);
+    }
   }
 }

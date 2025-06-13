@@ -1,12 +1,13 @@
-import { createClient } from "@supabase/supabase-js";
-
+import { createBrowserClient } from "@supabase/ssr";
 import type { Database } from "./database.types";
 
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_KEY;
 
-export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Missing Supabase environment variables");
+}
+
+export const supabaseClient = createBrowserClient<Database>(supabaseUrl, supabaseKey);
 
 export type SupabaseClient = typeof supabaseClient;
-
-export const DEFAULT_USER_ID = "931c3075-6c7d-4824-bb8e-a301dd050ddf";

@@ -3,6 +3,7 @@ import {Toaster} from "@/components/ui/sonner";
 import {Image} from "astro:assets";
 import {ViewTransitions} from "astro:transitions";
 import {Navigation} from "../components/Navigation";
+import {initializeUserStore} from "../stores/userStore";
 import "../styles/global.css";
 
 // Import obrazów
@@ -13,6 +14,10 @@ interface Props {
 }
 
 const {title = "10xCards"} = Astro.props;
+const {user} = Astro.locals;
+
+// Initialize user store
+initializeUserStore(user);
 ---
 
 <!doctype html>
@@ -28,9 +33,9 @@ const {title = "10xCards"} = Astro.props;
   <body class='sm:bg-gray-100'>
     <div class='min-h-screen w-full relative'>
       {/* Background image container */}
-      <div class='fixed inset-0 -z-10 hidden sm:block' aria-hidden='true'>
-        <div class='relative w-full h-full'>
-          <div class='hidden sm:block w-full h-full'>
+      <div class='fixed inset-0 -z-10 hidden sm:block overflow-hidden' aria-hidden='true'>
+        <div class='absolute inset-0 w-[100vw] h-[100vh]'>
+          <div class='absolute inset-0 w-full h-full'>
             <Image
               src={bgImage}
               alt='A background image of a blue lights abstraction'

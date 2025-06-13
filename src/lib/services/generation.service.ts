@@ -48,7 +48,7 @@ export class GenerationService {
       const prompt = `Twoim zadaniem jest tworzenie fiszek edukacyjnych z podanego tekstu. Każda fiszka powinna mieć przód (pytanie) i tył (odpowiedź).
 
 Zasady:
-1. Stwórz 3-5 zwięzłych i przejrzystych fiszek.
+1. Stwórz 3-6 zwięzłych i przejrzystych fiszek.
 2. Skup się na kluczowych pojęciach i ważnych informacjach.
 3. Pytania powinny być konkretne i jednoznaczne.
 4. Udzielaj jasnych i precyzyjnych odpowiedzi.
@@ -97,9 +97,9 @@ Pamiętaj: Zwróć WYŁĄCZNIE tablicę JSON, bez żadnego innego tekstu ani wyj
           throw new Error("No flashcards were generated");
         }
 
-        if (proposals.length > 10) {
+        if (proposals.length > 9) {
           // Limit the number of flashcards if the model generates too many
-          proposals = proposals.slice(0, 10);
+          proposals = proposals.slice(0, 9);
         }
       } catch (error) {
         this.logger.error("Failed to parse flashcard proposals", error);

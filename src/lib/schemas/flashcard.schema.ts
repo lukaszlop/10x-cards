@@ -4,13 +4,12 @@ import { z } from "zod";
 const baseFlashcardSchema = z.object({
   front: z.string().max(200, "Front text cannot exceed 200 characters"),
   back: z.string().max(500, "Back text cannot exceed 500 characters"),
-  source: z.enum(["manual", "ai-full", "ai-edited"] as const),
 });
 
 // Schemat dla fiszki manualnej
 const manualFlashcardSchema = baseFlashcardSchema.extend({
-  source: z.literal("manual"),
-  generation_id: z.null(),
+  source: z.literal("manual").optional(),
+  generation_id: z.null().optional(),
 });
 
 // Schemat dla fiszki AI (pełnej lub edytowanej)
@@ -20,7 +19,7 @@ const aiFlashcardSchema = baseFlashcardSchema.extend({
 });
 
 // Schemat dla pojedynczej fiszki (unia typów)
-export const flashcardSchema = z.discriminatedUnion("source", [manualFlashcardSchema, aiFlashcardSchema]);
+export const flashcardSchema = z.union([manualFlashcardSchema, aiFlashcardSchema]);
 
 // Schemat dla komendy tworzenia wielu fiszek
 export const createFlashcardsSchema = z.object({

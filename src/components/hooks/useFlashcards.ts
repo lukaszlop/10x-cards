@@ -24,6 +24,13 @@ interface UseFlashcardsReturn {
 
 const DEFAULT_PAGE_SIZE = 9; // Ustawienie domyślnej wartości na najmniejszą z PAGE_SIZE_OPTIONS
 
+const fetchWithAuth = (input: RequestInfo | URL, init?: RequestInit) => {
+  return fetch(input, {
+    ...init,
+    credentials: "include",
+  });
+};
+
 export function useFlashcards({
   initialPage = 1,
   initialLimit = DEFAULT_PAGE_SIZE,
@@ -50,7 +57,7 @@ export function useFlashcards({
         order: "desc",
       });
 
-      const response = await fetch(`/api/flashcards?${queryParams}`);
+      const response = await fetchWithAuth(`/api/flashcards?${queryParams}`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch flashcards");
@@ -63,7 +70,7 @@ export function useFlashcards({
         ...data.pagination,
       }));
     } catch (err) {
-      setError("Failed to load flashcards. Please try again.");
+      setError("Błąd podczas ładowania fiszek. Spróbuj ponownie.");
       console.error("Error fetching flashcards:", err);
     } finally {
       setIsLoading(false);
@@ -94,14 +101,12 @@ export function useFlashcards({
 
   const addFlashcard = async (flashcard: CreateFlashcardDTO) => {
     try {
-      const response = await fetch("/api/flashcards", {
+      const response = await fetchWithAuth("/api/flashcards", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          flashcards: [flashcard],
-        }),
+        body: JSON.stringify(flashcard),
       });
 
       if (!response.ok) {
@@ -118,12 +123,12 @@ export function useFlashcards({
 
   const updateFlashcard = async (id: number, data: UpdateFlashcardDTO) => {
     try {
-      const response = await fetch(`/api/flashcards/${id}`, {
+      const response = await fetchWithAuth("/api/flashcards", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ id, ...data }),
       });
 
       if (!response.ok) {
@@ -141,8 +146,12 @@ export function useFlashcards({
 
   const removeFlashcard = async (id: number) => {
     try {
-      const response = await fetch(`/api/flashcards/${id}`, {
+      const response = await fetchWithAuth("/api/flashcards", {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
       });
 
       if (!response.ok) {

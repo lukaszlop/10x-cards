@@ -75,7 +75,7 @@ export class OpenRouterService {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${this.apiKey}`,
                 "HTTP-Referer": import.meta.env.PUBLIC_SITE_URL || "http://localhost:3000",
-                "X-Title": "10x Cards",
+                "X-Title": "10xCards",
               },
               body: JSON.stringify(payload),
             });

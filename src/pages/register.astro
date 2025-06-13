@@ -1,0 +1,17 @@
+---
+import {RegisterForm} from "@/components/auth/RegisterForm";
+import Layout from "@/layouts/Layout.astro";
+---
+
+<Layout title='Rejestracja | 10xCards'>
+  <div class='container max-w-md mx-auto py-8'>
+    <div class='text-center mb-8'>
+      <h1 class='text-2xl font-bold mb-2'>Stwórz konto</h1>
+      <p class='text-gray-600'>Dołącz do społeczności 10xCards</p>
+    </div>
+
+    <div class='bg-white p-8 rounded-lg shadow-md'>
+      <RegisterForm client:load onSubmit={(data) => console.log(data)} />
+    </div>
+  </div>
+</Layout>
