@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { supabaseClient } from "@/db/supabase.client";
-import { userStore } from "@/stores/userStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -26,41 +24,29 @@ export function LoginForm() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      console.log("Login attempt...");
-
-      const { data: authData, error } = await supabaseClient.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
       });
 
-      if (error) {
-        console.error("Login error:", error);
-        throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Nieprawidłowy email lub hasło");
       }
 
-      if (!authData.session) {
-        console.error("No session after login");
-        throw new Error("No session after login");
-      }
-
-      console.log("Successfully logged in:", authData);
-
-      // Set user state
-      userStore.set(authData.user);
-
-      // Show success message
       toast.success("Zalogowano pomyślnie");
-
-      // Redirect to home page
-      window.location.href = "/";
+      window.location.href = "/"; // Redirect to a protected page
     } catch (error) {
       console.error("Caught error:", error);
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("Nieprawidłowy email lub hasło");
+        toast.error("Wystąpił nieoczekiwany błąd.");
       }
     } finally {
       setIsLoading(false);

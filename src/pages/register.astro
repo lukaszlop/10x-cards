@@ -1,6 +1,12 @@
 ---
 import {RegisterForm} from "@/components/auth/RegisterForm";
 import Layout from "@/layouts/Layout.astro";
+
+// Redirect if user is already logged in
+const {user} = Astro.locals;
+if (user) {
+  return Astro.redirect("/");
+}
 ---
 
 <Layout title='Rejestracja | 10xCards'>
@@ -11,7 +17,7 @@ import Layout from "@/layouts/Layout.astro";
     </div>
 
     <div class='bg-white p-8 rounded-lg shadow-md'>
-      <RegisterForm client:load onSubmit={(data) => console.log(data)} />
+      <RegisterForm client:load />
     </div>
   </div>
 </Layout>

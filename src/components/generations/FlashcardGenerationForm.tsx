@@ -49,7 +49,7 @@ export function FlashcardGenerationForm({ onSubmit, isLoading, initialText = "" 
           value={sourceText}
           onChange={handleTextChange}
           placeholder="Wprowadź tekst źródłowy do wygenerowania fiszek..."
-          className="min-h-[200px] max-h-[400px] resize-none"
+          className="min-h-[200px] max-h-[400px] resize-none bg-white"
           disabled={isLoading}
         />
         <div className="flex justify-between text-sm text-gray-500">

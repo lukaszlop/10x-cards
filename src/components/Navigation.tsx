@@ -1,38 +1,25 @@
-import { useStore } from "@nanostores/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { supabaseClient } from "../db/supabase.client";
-import { userStore } from "../stores/userStore";
 
-export const Navigation = () => {
+// This interface should match the one in `src/env.d.ts`
+interface User {
+  id: string;
+  email?: string;
+}
+
+interface NavigationProps {
+  user: User | null;
+}
+
+export const Navigation = ({ user }: NavigationProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const user = useStore(userStore);
-
-  useEffect(() => {
-    // Get initial session
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      userStore.set(session?.user ?? null);
-      setIsLoading(false);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabaseClient.auth.onAuthStateChange((event, session) => {
-      userStore.set(session?.user ?? null);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
 
   const handleLogout = async () => {
     try {
-      await supabaseClient.auth.signOut();
-      toast.success("Wylogowano pomyślnie");
-      window.location.href = "/login";
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (response.redirected) {
+        window.location.href = response.url;
+      }
     } catch {
       toast.error("Wystąpił błąd podczas wylogowywania");
     }
@@ -95,25 +82,24 @@ export const Navigation = () => {
               {/* Mobile user section */}
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <div className="px-3 py-2">
-                  {!isLoading &&
-                    (user ? (
-                      <>
-                        <div className="text-sm text-gray-600 mb-2">{user.email}</div>
-                        <button
-                          onClick={handleLogout}
-                          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors w-full text-left"
-                        >
-                          Wyloguj
-                        </button>
-                      </>
-                    ) : (
-                      <a
-                        href="/login"
-                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors w-full text-left block text-center"
+                  {user ? (
+                    <>
+                      <div className="text-sm text-gray-600 mb-2">{user.email}</div>
+                      <button
+                        onClick={handleLogout}
+                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors w-full text-left"
                       >
-                        Zaloguj się
-                      </a>
-                    ))}
+                        Wyloguj
+                      </button>
+                    </>
+                  ) : (
+                    <a
+                      href="/login"
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors w-full text-left block text-center"
+                    >
+                      Zaloguj się
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
@@ -129,10 +115,7 @@ export const Navigation = () => {
             <div className="flex">
               {/* Logo */}
               <div className="flex-shrink-0 flex items-center">
-                <a
-                  href="/generations"
-                  className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
-                >
+                <a href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors">
                   10xCards
                 </a>
               </div>
@@ -158,25 +141,24 @@ export const Navigation = () => {
             <div className="flex items-center">
               {/* Desktop user menu */}
               <div className="hidden md:flex md:items-center md:space-x-4">
-                {!isLoading &&
-                  (user ? (
-                    <>
-                      <span className="text-sm text-gray-600">{user.email}</span>
-                      <button
-                        onClick={handleLogout}
-                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                      >
-                        Wyloguj
-                      </button>
-                    </>
-                  ) : (
-                    <a
-                      href="/login"
+                {user ? (
+                  <>
+                    <span className="text-sm text-gray-600">{user.email}</span>
+                    <button
+                      onClick={handleLogout}
                       className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
                     >
-                      Zaloguj się
-                    </a>
-                  ))}
+                      Wyloguj
+                    </button>
+                  </>
+                ) : (
+                  <a
+                    href="/login"
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    Zaloguj się
+                  </a>
+                )}
               </div>
 
               {/* Mobile menu button */}

@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
 
 const registerFormSchema = z
@@ -22,12 +24,8 @@ const registerFormSchema = z
 
 type RegisterFormData = z.infer<typeof registerFormSchema>;
 
-interface RegisterFormProps {
-  onSubmit: (data: RegisterFormData) => void;
-  isLoading?: boolean;
-}
-
-export function RegisterForm({ onSubmit, isLoading = false }: RegisterFormProps) {
+export function RegisterForm() {
+  const [isLoading, setIsLoading] = useState(false);
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
@@ -37,13 +35,50 @@ export function RegisterForm({ onSubmit, isLoading = false }: RegisterFormProps)
     },
   });
 
+  const onSubmit = async (data: RegisterFormData) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: data.email, password: data.password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Nie udało się utworzyć konta.");
+      }
+
+      toast.success("Konto zostało utworzone. Sprawdź swoją skrzynkę email aby potwierdzić rejestrację.");
+      window.location.href = "/"; // Redirect to home page
+    } catch (error) {
+      console.error("Caught error:", error);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Wystąpił nieoczekiwany błąd.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="email">
           Adres email
         </label>
-        <Input id="email" type="email" {...form.register("email")} placeholder="twoj@email.com" autoComplete="email" />
+        <Input
+          id="email"
+          type="email"
+          {...form.register("email")}
+          placeholder="twoj@email.com"
+          autoComplete="email"
+          disabled={isLoading}
+        />
         {form.formState.errors.email && <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>}
       </div>
 
@@ -57,6 +92,7 @@ export function RegisterForm({ onSubmit, isLoading = false }: RegisterFormProps)
           {...form.register("password")}
           placeholder="••••••••"
           autoComplete="new-password"
+          disabled={isLoading}
         />
         {form.formState.errors.password && (
           <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
@@ -73,6 +109,7 @@ export function RegisterForm({ onSubmit, isLoading = false }: RegisterFormProps)
           {...form.register("confirmPassword")}
           placeholder="••••••••"
           autoComplete="new-password"
+          disabled={isLoading}
         />
         {form.formState.errors.confirmPassword && (
           <p className="text-sm text-red-500">{form.formState.errors.confirmPassword.message}</p>

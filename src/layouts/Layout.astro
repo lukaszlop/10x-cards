@@ -1,29 +1,25 @@
 ---
+import {Navigation} from "@/components/Navigation";
 import {Toaster} from "@/components/ui/sonner";
+import "@fontsource/inter";
 import {Image} from "astro:assets";
 import {ViewTransitions} from "astro:transitions";
-import {Navigation} from "../components/Navigation";
-import {initializeUserStore} from "../stores/userStore";
+import bgImage from "../assets/images/backgrounds/bg-img.jpg";
 import "../styles/global.css";
 
-// Import obrazów
-import bgImage from "../assets/images/backgrounds/bg-img.jpg";
-
 interface Props {
-  title?: string;
+  title: string;
 }
 
-const {title = "10xCards"} = Astro.props;
-const {user} = Astro.locals;
-
-// Initialize user store
-initializeUserStore(user);
+const {title} = Astro.props;
+const user = Astro.locals.user ?? null;
 ---
 
 <!doctype html>
 <html lang='en'>
   <head>
     <meta charset='UTF-8' />
+    <meta name='description' content='Astro description' />
     <meta name='viewport' content='width=device-width' />
     <link rel='icon' type='image/png' href='/favicon.png' />
     <meta name='generator' content={Astro.generator} />
@@ -32,7 +28,6 @@ initializeUserStore(user);
   </head>
   <body class='sm:bg-gray-100'>
     <div class='min-h-screen w-full relative'>
-      {/* Background image container */}
       <div class='fixed inset-0 -z-10 hidden sm:block overflow-hidden' aria-hidden='true'>
         <div class='absolute inset-0 w-[100vw] h-[100vh]'>
           <div class='absolute inset-0 w-full h-full'>
@@ -46,19 +41,17 @@ initializeUserStore(user);
           </div>
         </div>
       </div>
-
-      {/* Main content container */}
       <div class='min-h-screen w-full sm:container sm:mx-auto sm:px-4 sm:py-6'>
         <div
           class='sm:bg-white/95 sm:backdrop-blur-sm sm:rounded-2xl sm:shadow-xl sm:min-h-[calc(100vh-3rem)] overflow-hidden'
         >
-          <Navigation client:load />
+          <Toaster richColors />
+          <Navigation user={user} client:load />
           <main class='container mx-auto px-4 pb-6 pt-16'>
             <slot />
           </main>
         </div>
       </div>
     </div>
-    <Toaster richColors closeButton client:only='react' />
   </body>
 </html>
