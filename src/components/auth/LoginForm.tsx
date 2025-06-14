@@ -39,8 +39,10 @@ export function LoginForm() {
         throw new Error(errorData.error || "Nieprawidłowy email lub hasło");
       }
 
-      toast.success("Zalogowano pomyślnie");
-      window.location.href = "/"; // Redirect to a protected page
+      toast.success("Zalogowano pomyślnie! Za chwilę zostaniesz przekierowany.");
+      setTimeout(() => {
+        window.location.href = "/"; // Redirect to a protected page
+      }, 2000); // 2-second delay
     } catch (error) {
       console.error("Caught error:", error);
       if (error instanceof Error) {
@@ -88,7 +90,7 @@ export function LoginForm() {
       </div>
 
       <div className="flex justify-end">
-        <a href="/reset-password" className="text-sm text-blue-600 hover:text-blue-800">
+        <a href="/auth/reset-password" className="text-sm text-blue-600 hover:text-blue-800">
           Nie pamiętasz hasła?
         </a>
       </div>
@@ -99,7 +101,7 @@ export function LoginForm() {
 
       <p className="text-center text-sm text-gray-600">
         Nie masz jeszcze konta?{" "}
-        <a href="/register" className="text-blue-600 hover:text-blue-800">
+        <a href="/auth/register" className="text-blue-600 hover:text-blue-800">
           Zarejestruj się
         </a>
       </p>

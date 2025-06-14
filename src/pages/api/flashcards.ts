@@ -16,7 +16,11 @@ const multipleFlashcardsSchema = z.object({
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const { user, supabase } = locals;
+    const { supabase } = locals;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
@@ -59,7 +63,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 export const GET: APIRoute = async ({ url, locals }) => {
   try {
-    const { user, supabase } = locals;
+    const { supabase } = locals;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
@@ -96,7 +103,10 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
 export const PUT: APIRoute = async ({ request, locals }) => {
   try {
-    const { user, supabase } = locals;
+    const { supabase } = locals;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
@@ -130,7 +140,10 @@ export const PUT: APIRoute = async ({ request, locals }) => {
 
 export const DELETE: APIRoute = async ({ request, locals }) => {
   try {
-    const { user, supabase } = locals;
+    const { supabase } = locals;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });

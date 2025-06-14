@@ -1,23 +1,49 @@
-import { createSupabaseServerInstance } from "@/db/supabase.client";
 import type { APIRoute } from "astro";
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const prerender = false;
+
+export const POST: APIRoute = async ({ request, locals }) => {
   const { email, password } = await request.json();
 
-  const supabase = createSupabaseServerInstance({ cookies, headers: request.headers });
+  if (!email || !password) {
+    return new Response(JSON.stringify({ error: "Email i hasło są wymagane" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
-  const { data, error } = await supabase.auth.signUp({
+  const redirectUrl = `${new URL(request.url).origin}/auth/confirm-email`;
+
+  const { data, error } = await locals.supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo: redirectUrl,
+    },
   });
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
+      headers: { "Content-Type": "application/json" },
     });
   }
 
-  return new Response(JSON.stringify({ user: data.user }), {
+  if (data.user && !data.user.email_confirmed_at) {
+    return new Response(
+      JSON.stringify({
+        message: "Rejestracja przebiegła pomyślnie. Sprawdź swoją skrzynkę email i kliknij w link aktywacyjny.",
+        requiresConfirmation: true,
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+
+  return new Response(JSON.stringify({ message: "Zarejestrowano pomyślnie" }), {
     status: 200,
+    headers: { "Content-Type": "application/json" },
   });
 };

@@ -121,4 +121,119 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Sonner Toast Styles - Maksymalny z-index dla View Transitions */
+  [data-astro-transition-persist="toaster"] {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    pointer-events: none !important;
+    z-index: 999999 !important;
+    /* Debug border - usuń po debugowaniu */
+    /* border: 2px solid red; */
+  }
+
+  [data-sonner-toaster] {
+    position: fixed !important;
+    z-index: 999999 !important;
+    pointer-events: none !important;
+    /* Force proper positioning */
+    bottom: 16px !important;
+    right: 16px !important;
+    top: auto !important;
+    left: auto !important;
+    /* Debug border - usuń po debugowaniu */
+    /* border: 2px solid blue; */
+  }
+
+  [data-sonner-toaster] > * {
+    pointer-events: auto !important;
+  }
+
+  /* Force isolation of toaster from other elements */
+  [data-sonner-toaster] {
+    isolation: isolate !important;
+    contain: layout style paint !important;
+  }
+
+  /* Ensure toast items have proper styling */
+  [data-sonner-toast] {
+    /* Keep existing styles but add forced positioning */
+    position: relative !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Static Sonner styles - backup for when dynamic styles fail */
+  [data-sonner-toaster][data-theme] {
+    --normal-bg: var(--popover) !important;
+    --normal-text: var(--popover-foreground) !important;
+    --normal-border: var(--border) !important;
+    --success-bg: var(--primary) !important;
+    --success-text: var(--primary-foreground) !important;
+    --warning-bg: var(--muted) !important;
+    --warning-text: var(--muted-foreground) !important;
+    --error-bg: var(--destructive) !important;
+    --error-text: var(--primary-foreground) !important;
+  }
+
+  /* Force Sonner toast styling if dynamic styles are missing */
+  [data-sonner-toast]:not([data-styled="true"]) {
+    background: var(--normal-bg, white) !important;
+    color: var(--normal-text, black) !important;
+    border: 1px solid var(--normal-border, #e5e7eb) !important;
+    border-radius: var(--radius, 0.5rem) !important;
+    padding: 16px !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.15) !important;
+    min-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    word-wrap: break-word !important;
+    transition: all 0.3s ease !important;
+  }
+
+  [data-sonner-toast][data-type="success"]:not([data-styled="true"]) {
+    background: var(--success-bg, #16a34a) !important;
+    color: var(--success-text, white) !important;
+    border-color: var(--success-bg, #16a34a) !important;
+  }
+
+  [data-sonner-toast][data-type="error"]:not([data-styled="true"]) {
+    background: var(--error-bg, #dc2626) !important;
+    color: var(--error-text, white) !important;
+    border-color: var(--error-bg, #dc2626) !important;
+  }
+
+  [data-sonner-toast][data-type="warning"]:not([data-styled="true"]) {
+    background: var(--warning-bg, #f3f4f6) !important;
+    color: var(--warning-text, #374151) !important;
+    border-color: var(--warning-bg, #f3f4f6) !important;
+  }
+
+  [data-sonner-toast] {
+    background: var(--popover) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--popover-foreground) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.15) !important;
+  }
+
+  [data-sonner-toast][data-type="success"] {
+    background: var(--primary) !important;
+    color: var(--primary-foreground) !important;
+  }
+
+  [data-sonner-toast][data-type="error"] {
+    background: var(--destructive) !important;
+    color: var(--primary-foreground) !important;
+  }
+
+  [data-sonner-toast][data-type="warning"] {
+    background: var(--muted) !important;
+    color: var(--muted-foreground) !important;
+  }
 }

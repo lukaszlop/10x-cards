@@ -3,18 +3,20 @@ import type { APIRoute } from "astro";
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  const { email, password } = await request.json();
+  const { email } = await request.json();
 
-  if (!email || !password) {
-    return new Response(JSON.stringify({ error: "Email i hasło są wymagane" }), {
+  if (!email) {
+    return new Response(JSON.stringify({ error: "Email jest wymagany" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  const { error } = await locals.supabase.auth.signInWithPassword({
-    email,
-    password,
+  const supabase = locals.supabase;
+
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: email,
   });
 
   if (error) {
@@ -24,7 +26,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 
-  return new Response(JSON.stringify({ message: "Zalogowano pomyślnie" }), {
+  return new Response(JSON.stringify({ message: "Link potwierdzający został wysłany ponownie." }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });

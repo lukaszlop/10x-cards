@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { toast } from "sonner";
 import { BulkSaveButton, FlashcardGenerationForm, FlashcardProposalList, SkeletonLoader } from ".";
 import type { GenerationDTO, GenerationFlashcardProposal, GenerationViewState, ProposalViewModel } from "../../types";
+import { useToastManager } from "../hooks/useToastManager";
 
 export function GenerationsView() {
+  const toastManager = useToastManager();
+
   const [state, setState] = useState<GenerationViewState>({
     sourceText: "",
     isLoadingProposals: false,
@@ -61,6 +63,11 @@ export function GenerationsView() {
         isLoadingProposals: false,
         sourceText,
       }));
+
+      // Show success toast after proposals are generated
+      toastManager.showSuccess(
+        `Wygenerowano ${proposals.length} ${proposals.length === 1 ? "propozycję" : proposals.length <= 4 ? "propozycje" : "propozycji"} fiszek! Sprawdź i zaakceptuj te, które Ci się podobają.`
+      );
     } catch (error) {
       console.error("Error generating flashcards:", error);
       setState((prev) => ({
@@ -68,7 +75,7 @@ export function GenerationsView() {
         isLoadingProposals: false,
         error: "Nie udało się wygenerować fiszek. Spróbuj ponownie.",
       }));
-      toast.error("Nie udało się wygenerować fiszek. Spróbuj ponownie.");
+      toastManager.showError("Nie udało się wygenerować fiszek. Spróbuj ponownie.");
     }
   };
 
@@ -97,7 +104,7 @@ export function GenerationsView() {
         throw new Error("Failed to save flashcards");
       }
 
-      toast.success(`Zapisano ${flashcardsToSave.length} fiszek. Możesz teraz wygenerować kolejne.`);
+      toastManager.showSuccess(`Zapisano ${flashcardsToSave.length} fiszek. Możesz teraz wygenerować kolejne.`);
 
       resetState();
     } catch (error) {
@@ -107,7 +114,7 @@ export function GenerationsView() {
         isSavingFlashcards: false,
         error: "Nie udało się zapisać fiszek. Spróbuj ponownie.",
       }));
-      toast.error("Nie udało się zapisać fiszek. Spróbuj ponownie.");
+      toastManager.showError("Nie udało się zapisać fiszek. Spróbuj ponownie.");
     }
   };
 

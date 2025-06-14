@@ -1,31 +1,64 @@
+import { supabase } from "@/db/supabase";
+import { $user, setUser } from "@/store/auth";
+import { useStore } from "@nanostores/react";
+import type { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
-
-// This interface should match the one in `src/env.d.ts`
-interface User {
-  id: string;
-  email?: string;
-}
+import { useToastManager } from "./hooks/useToastManager";
 
 interface NavigationProps {
-  user: User | null;
+  initialUser: User | null;
 }
 
-export const Navigation = ({ user }: NavigationProps) => {
+export const Navigation = ({ initialUser }: NavigationProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const user = useStore($user);
+  const [isAuthPage, setIsAuthPage] = useState(false);
+  const toastManager = useToastManager();
+
+  useEffect(() => {
+    // Check if on any auth page on the client
+    setIsAuthPage(window.location.pathname.startsWith("/auth/"));
+
+    setUser(initialUser);
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [initialUser]);
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("/api/auth/logout", { method: "POST" });
-      if (response.redirected) {
-        window.location.href = response.url;
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toastManager.showError(`Wystąpił błąd podczas wylogowywania: ${error.message}`);
+      } else {
+        toastManager.showSuccess("Wylogowano pomyślnie. Do zobaczenia!");
+        setTimeout(() => {
+          if (document.startViewTransition) {
+            document.startViewTransition(() => {
+              window.location.href = "/auth/login";
+            });
+          } else {
+            window.location.href = "/auth/login";
+          }
+        }, 1500);
       }
-    } catch {
-      toast.error("Wystąpił błąd podczas wylogowywania");
+    } catch (err) {
+      console.error("Logout error:", err);
+      toastManager.showError("Wystąpił nieoczekiwany błąd");
     }
   };
 
-  // Prevent body scroll when mobile menu is open
+  const handleMobileNavClick = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -38,15 +71,15 @@ export const Navigation = ({ user }: NavigationProps) => {
     };
   }, [isMobileMenuOpen]);
 
+  const shouldShowUser = user && !isAuthPage;
+
   return (
     <div className="relative">
-      {/* Mobile menu overlay and container */}
       <div
         className={`md:hidden fixed inset-0 z-[100] ${
           isMobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"
         }`}
       >
-        {/* Dark overlay behind the drawer */}
         <div
           className={`
             fixed inset-0 bg-black/50 backdrop-blur-[4px] transition-opacity duration-300
@@ -56,7 +89,6 @@ export const Navigation = ({ user }: NavigationProps) => {
           aria-hidden="true"
         />
 
-        {/* Mobile navigation menu */}
         <div className="fixed inset-x-0 top-16">
           <div
             className={`
@@ -68,33 +100,35 @@ export const Navigation = ({ user }: NavigationProps) => {
             <div className="px-2 pt-2 pb-3 space-y-1 max-h-[calc(100vh-80px)] overflow-y-auto">
               <a
                 href="/generations"
+                onClick={handleMobileNavClick}
                 className="text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors"
               >
                 Generowanie fiszek
               </a>
               <a
                 href="/flashcards"
+                onClick={handleMobileNavClick}
                 className="text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors"
               >
                 Moje fiszki
               </a>
 
-              {/* Mobile user section */}
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <div className="px-3 py-2">
-                  {user ? (
+                  {shouldShowUser ? (
                     <>
                       <div className="text-sm text-gray-600 mb-2">{user.email}</div>
                       <button
                         onClick={handleLogout}
-                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors w-full text-left"
+                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors w-full text-left cursor-pointer"
                       >
                         Wyloguj
                       </button>
                     </>
                   ) : (
                     <a
-                      href="/login"
+                      href="/auth/login"
+                      onClick={handleMobileNavClick}
                       className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors w-full text-left block text-center"
                     >
                       Zaloguj się
@@ -107,20 +141,16 @@ export const Navigation = ({ user }: NavigationProps) => {
         </div>
       </div>
 
-      {/* Navigation bar */}
       <nav className="bg-white/50 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none border-b-2 border-gray-200/50 fixed inset-x-0 top-0 h-16 z-[90]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
           <div className="flex justify-between h-full">
-            {/* Left side: Logo and main navigation */}
             <div className="flex">
-              {/* Logo */}
               <div className="flex-shrink-0 flex items-center">
                 <a href="/" className="text-2xl font-bold text-gray-900 hover:text-gray-700 transition-colors">
                   10xCards
                 </a>
               </div>
 
-              {/* Desktop navigation links */}
               <div className="hidden md:ml-4 lg:ml-8 md:flex md:items-center md:space-x-2 lg:space-x-8">
                 <a
                   href="/generations"
@@ -137,23 +167,21 @@ export const Navigation = ({ user }: NavigationProps) => {
               </div>
             </div>
 
-            {/* Right side: User info and logout */}
             <div className="flex items-center">
-              {/* Desktop user menu */}
               <div className="hidden md:flex md:items-center md:space-x-4">
-                {user ? (
+                {shouldShowUser ? (
                   <>
                     <span className="text-sm text-gray-600">{user.email}</span>
                     <button
                       onClick={handleLogout}
-                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
                     >
                       Wyloguj
                     </button>
                   </>
                 ) : (
                   <a
-                    href="/login"
+                    href="/auth/login"
                     className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     Zaloguj się
@@ -161,7 +189,6 @@ export const Navigation = ({ user }: NavigationProps) => {
                 )}
               </div>
 
-              {/* Mobile menu button */}
               <div className="md:hidden">
                 <button
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

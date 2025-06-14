@@ -1,4 +1,4 @@
-import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { Toaster as Sonner } from "sonner";
 
 interface ToasterProps {
@@ -11,8 +11,28 @@ interface ToasterProps {
   closeButton?: boolean;
 }
 
+function useAstroTheme() {
+  const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | "system" | null;
+
+    const updateTheme = () => {
+      const currentTheme = savedTheme || "system";
+      setTheme(currentTheme);
+    };
+
+    updateTheme();
+    mediaQuery.addEventListener("change", updateTheme);
+    return () => mediaQuery.removeEventListener("change", updateTheme);
+  }, []);
+
+  return theme;
+}
+
 export function Toaster({ ...props }: Partial<ToasterProps>) {
-  const { theme = "system" } = useTheme();
+  const theme = useAstroTheme();
 
   return (
     <Sonner
@@ -23,6 +43,12 @@ export function Toaster({ ...props }: Partial<ToasterProps>) {
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
+          "--success-bg": "var(--primary)",
+          "--success-text": "var(--primary-foreground)",
+          "--warning-bg": "var(--muted)",
+          "--warning-text": "var(--muted-foreground)",
+          "--error-bg": "var(--destructive)",
+          "--error-text": "var(--primary-foreground)",
         } as React.CSSProperties
       }
       {...props}

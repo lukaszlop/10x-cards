@@ -51,8 +51,19 @@ export function RegisterForm() {
         throw new Error(errorData.error || "Nie udało się utworzyć konta.");
       }
 
-      toast.success("Konto zostało utworzone. Sprawdź swoją skrzynkę email aby potwierdzić rejestrację.");
-      window.location.href = "/"; // Redirect to home page
+      const result = await response.json();
+
+      if (result.requiresConfirmation) {
+        toast.success(result.message + " Za chwilę zostaniesz przekierowany.");
+        setTimeout(() => {
+          window.location.href = `/auth/registration-pending?email=${encodeURIComponent(data.email)}`;
+        }, 3000); // 3-second delay
+      } else {
+        toast.success("Konto zostało utworzone pomyślnie! Logowanie...");
+        setTimeout(() => {
+          window.location.href = "/"; // Direct login if no confirmation needed
+        }, 2000); // 2-second delay
+      }
     } catch (error) {
       console.error("Caught error:", error);
       if (error instanceof Error) {
@@ -122,7 +133,7 @@ export function RegisterForm() {
 
       <p className="text-center text-sm text-gray-600">
         Masz już konto?{" "}
-        <a href="/login" className="text-blue-600 hover:text-blue-800">
+        <a href="/auth/login" className="text-blue-600 hover:text-blue-800">
           Zaloguj się
         </a>
       </p>

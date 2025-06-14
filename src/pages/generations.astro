@@ -1,17 +1,11 @@
 ---
-import {GenerationsView} from "../components/generations";
+import {GenerationsView} from "../components/generations/GenerationsView";
 import Layout from "../layouts/Layout.astro";
-
-// Redirect if user is not logged in
-const {user} = Astro.locals;
-if (!user) {
-  return Astro.redirect("/login");
-}
 ---
 
 <Layout title='Generowanie Fiszek AI'>
-  <main class='container mx-auto px-4 py-8'>
+  <div class='py-8'>
     <h1 class='text-4xl font-bold mb-8'>Generowanie Fiszek AI</h1>
-    <GenerationsView client:load />
-  </main>
+    <GenerationsView client:only='react' />
+  </div>
 </Layout>

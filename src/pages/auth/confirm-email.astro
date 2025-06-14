@@ -1,0 +1,22 @@
+---
+import {ConfirmEmailContent} from "@/components/auth/ConfirmEmailContent";
+import Layout from "@/layouts/Layout.astro";
+
+// Handle email confirmation from the link
+const url = new URL(Astro.request.url);
+const accessToken = url.searchParams.get("access_token");
+const refreshToken = url.searchParams.get("refresh_token");
+const type = url.searchParams.get("type");
+
+// If no tokens present or wrong type, redirect to login
+if (!accessToken || !refreshToken || type !== "signup") {
+  return Astro.redirect("/auth/login");
+}
+
+// The actual confirmation will be handled by Supabase automatically
+// when the user clicks the link. This page just shows success message.
+---
+
+<Layout title='Email potwierdzony | 10xCards'>
+  <ConfirmEmailContent client:load />
+</Layout>

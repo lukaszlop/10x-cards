@@ -1,0 +1,12 @@
+---
+import {RegistrationPendingContent} from "@/components/auth/RegistrationPendingContent";
+import Layout from "@/layouts/Layout.astro";
+
+// Get email from URL params for resend functionality
+const url = new URL(Astro.request.url);
+const email = url.searchParams.get("email");
+---
+
+<Layout title='Potwierdź swój email | 10xCards'>
+  <RegistrationPendingContent client:load email={email} />
+</Layout>

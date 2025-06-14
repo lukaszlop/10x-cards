@@ -11,7 +11,10 @@ const generateSchema = z.object({
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const { user, supabase } = locals;
+    const { supabase } = locals;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });

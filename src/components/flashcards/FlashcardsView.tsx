@@ -1,8 +1,8 @@
 import { useFlashcards } from "@/components/hooks/useFlashcards";
+import { useToastManager } from "@/components/hooks/useToastManager";
 import { Button } from "@/components/ui/button";
 import type { FlashcardResponseDTO, FlashcardsViewState, ManualFlashcardDTO, UpdateFlashcardDTO } from "@/types";
 import { useState } from "react";
-import { toast } from "sonner";
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
 import { FlashcardFormModal } from "./FlashcardFormModal";
 import { FlashcardsList } from "./FlashcardsList";
@@ -11,6 +11,8 @@ import { PaginationControls } from "./PaginationControls";
 const DEFAULT_PAGE_SIZE = 9; // Ustawienie domyślnej wartości na najmniejszą z PAGE_SIZE_OPTIONS
 
 export function FlashcardsView() {
+  const toastManager = useToastManager();
+
   const {
     flashcards,
     isLoading,
@@ -79,7 +81,7 @@ export function FlashcardsView() {
   // Form submission handlers
   const handleSubmit = async (data: UpdateFlashcardDTO) => {
     if (!data.front || !data.back) {
-      toast.error("Przód fiszki i tył fiszki są wymagane");
+      toastManager.showError("Przód fiszki i tył fiszki są wymagane");
       return;
     }
 
@@ -92,7 +94,8 @@ export function FlashcardsView() {
           generation_id: null,
         };
         await addFlashcard(newFlashcard);
-        toast.success("Fiszka została dodana");
+        toastManager.showSuccess("Fiszka została dodana");
+        handleCloseModal();
       } else if (state.modalMode === "edit" && state.editingFlashcard) {
         const source =
           state.editingFlashcard.source === "ai-full"
@@ -105,12 +108,12 @@ export function FlashcardsView() {
           ...data,
           source,
         });
-        toast.success("Fiszka została zaktualizowana");
+        toastManager.showSuccess("Fiszka została zaktualizowana");
+        handleCloseModal();
       }
-      handleCloseModal();
     } catch (error) {
       console.error("Failed to save flashcard:", error);
-      toast.error("Nie udało się zapisać fiszki. Spróbuj ponownie.");
+      toastManager.showError("Nie udało się zapisać fiszki. Spróbuj ponownie.");
     }
   };
 
@@ -119,11 +122,11 @@ export function FlashcardsView() {
 
     try {
       await removeFlashcard(state.deletingFlashcardId);
-      toast.success("Fiszka została usunięta");
+      toastManager.showSuccess("Fiszka została usunięta");
       handleCloseDeleteDialog();
     } catch (error) {
       console.error("Failed to delete flashcard:", error);
-      toast.error("Nie udało się usunąć fiszki. Spróbuj ponownie.");
+      toastManager.showError("Nie udało się usunąć fiszki. Spróbuj ponownie.");
     }
   };
 

@@ -1,17 +1,11 @@
 ---
-import {FlashcardsView} from "@/components/flashcards";
+import {FlashcardsView} from "@/components/flashcards/FlashcardsView";
 import Layout from "../layouts/Layout.astro";
-
-// Redirect if user is not logged in
-const {user} = Astro.locals;
-if (!user) {
-  return Astro.redirect("/login");
-}
 ---
 
 <Layout title='Moje Fiszki'>
-  <main class='container mx-auto px-4 py-8'>
+  <div class='py-8'>
     <h1 class='text-4xl font-bold mb-8'>Moje Fiszki</h1>
-    <FlashcardsView client:load />
-  </main>
+    <FlashcardsView client:only='react' />
+  </div>
 </Layout>

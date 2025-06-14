@@ -53,16 +53,10 @@ export function FlashcardFormModal({ isOpen, mode, initialData, onSubmit, onClos
 
   const handleSubmit = (values: z.infer<typeof flashcardFormSchema>) => {
     onSubmit(values);
-    form.reset();
-  };
-
-  const handleClose = () => {
-    form.reset();
-    onClose();
   };
 
   const handleOpenChange = (value: boolean) => {
-    if (!value) handleClose();
+    if (!value) onClose();
   };
 
   const frontLength = form.watch("front")?.length || 0;
@@ -120,7 +114,7 @@ export function FlashcardFormModal({ isOpen, mode, initialData, onSubmit, onClos
             {form.formState.errors.back && <p className="text-sm text-red-500">{form.formState.errors.back.message}</p>}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>
+            <Button type="button" variant="outline" onClick={onClose}>
               Anuluj
             </Button>
             <Button type="submit" disabled={isSubmitDisabled}>
