@@ -1,22 +1,22 @@
 ---
-import {LoginForm} from "@/components/auth/LoginForm";
+import { LoginForm } from "@/components/auth/LoginForm";
 import Layout from "@/layouts/Layout.astro";
 
 // Redirect if user is already logged in
-const {user} = Astro.locals;
+const { user } = Astro.locals;
 if (user) {
   return Astro.redirect("/");
 }
 ---
 
-<Layout title='Logowanie | 10xCards'>
-  <div class='container max-w-md mx-auto py-8'>
-    <div class='text-center mb-8'>
-      <h1 class='text-2xl font-bold mb-2'>Witaj w 10xCards!</h1>
-      <p class='text-gray-600'>Zaloguj się do swojego konta</p>
+<Layout title="Logowanie | 10xCards">
+  <div class="container max-w-md mx-auto py-8">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold mb-2">Witaj w 10xCards!</h1>
+      <p class="text-gray-600">Zaloguj się do swojego konta</p>
     </div>
 
-    <div class='bg-white p-8 rounded-lg shadow-md'>
+    <div class="bg-white p-8 rounded-lg shadow-md">
       <LoginForm client:load />
     </div>
   </div>

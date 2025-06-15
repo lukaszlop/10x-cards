@@ -1,5 +1,5 @@
 ---
-import {ConfirmEmailContent} from "@/components/auth/ConfirmEmailContent";
+import { ConfirmEmailContent } from "@/components/auth/ConfirmEmailContent";
 import Layout from "@/layouts/Layout.astro";
 
 // Handle email confirmation from the link
@@ -17,6 +17,6 @@ if (!accessToken || !refreshToken || type !== "signup") {
 // when the user clicks the link. This page just shows success message.
 ---
 
-<Layout title='Email potwierdzony | 10xCards'>
+<Layout title="Email potwierdzony | 10xCards">
   <ConfirmEmailContent client:load />
 </Layout>

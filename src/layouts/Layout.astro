@@ -1,9 +1,9 @@
 ---
-import {Navigation} from "@/components/Navigation";
-import {Toaster} from "@/components/ui/sonner";
+import { Navigation } from "@/components/Navigation";
+import { Toaster } from "@/components/ui/sonner";
 import "@fontsource/inter";
-import {Image} from "astro:assets";
-import {ViewTransitions} from "astro:transitions";
+import { Image } from "astro:assets";
+import { ViewTransitions } from "astro:transitions";
 import bgImage from "../assets/images/backgrounds/bg-img.jpg";
 import "../styles/global.css";
 
@@ -11,58 +11,58 @@ interface Props {
   title: string;
 }
 
-const {title} = Astro.props;
+const { title } = Astro.props;
 const user = Astro.locals.user ?? null;
 ---
 
 <!doctype html>
-<html lang='en'>
+<html lang="en">
   <head>
-    <meta charset='UTF-8' />
-    <meta name='description' content='Astro description' />
-    <meta name='viewport' content='width=device-width' />
-    <link rel='icon' type='image/png' href='/favicon.png' />
-    <meta name='generator' content={Astro.generator} />
+    <meta charset="UTF-8" />
+    <meta name="description" content="Astro description" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
 
     <!-- Preload głównych komponentów dla lepszej wydajności -->
-    <link rel='modulepreload' href='/src/components/generations/GenerationsView.tsx' />
-    <link rel='modulepreload' href='/src/components/flashcards/FlashcardsView.tsx' />
-    <link rel='modulepreload' href='/src/components/hooks/useToastManager.ts' />
+    <link rel="modulepreload" href="/src/components/generations/GenerationsView.tsx" />
+    <link rel="modulepreload" href="/src/components/flashcards/FlashcardsView.tsx" />
+    <link rel="modulepreload" href="/src/components/hooks/useToastManager.ts" />
 
     <ViewTransitions />
   </head>
-  <body class='sm:bg-gray-100'>
+  <body class="sm:bg-gray-100">
     <!-- Toaster na samym początku body - poza View Transitions -->
     <div
-      id='toaster-container'
-      style='position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 999999;'
+      id="toaster-container"
+      style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 999999;"
     >
-      <Toaster richColors client:load position='bottom-right' />
+      <Toaster richColors client:load position="bottom-right" />
     </div>
 
-    <div class='min-h-screen w-full relative'>
-      <div class='fixed inset-0 -z-10 hidden sm:block overflow-hidden' aria-hidden='true'>
-        <div class='absolute inset-0 w-[100vw] h-[100vh]'>
-          <div class='absolute inset-0 w-full h-full'>
+    <div class="min-h-screen w-full relative">
+      <div class="fixed inset-0 -z-10 hidden sm:block overflow-hidden" aria-hidden="true">
+        <div class="absolute inset-0 w-[100vw] h-[100vh]">
+          <div class="absolute inset-0 w-full h-full">
             <Image
               src={bgImage}
-              alt='A background image of a blue lights abstraction'
-              title='Zdjęcie dodane przez Marek Piwnicki: https://www.pexels.com/pl-pl/zdjecie/jasny-lekki-swiatla-niebieski-12489187/'
-              class='w-full h-full object-cover'
-              quality='max'
+              alt="A background image of a blue lights abstraction"
+              title="Zdjęcie dodane przez Marek Piwnicki: https://www.pexels.com/pl-pl/zdjecie/jasny-lekki-swiatla-niebieski-12489187/"
+              class="w-full h-full object-cover"
+              quality="max"
             />
           </div>
         </div>
       </div>
-      <div class='min-h-screen w-full sm:container sm:mx-auto sm:px-4 sm:py-6'>
+      <div class="min-h-screen w-full sm:container sm:mx-auto sm:px-4 sm:py-6">
         <div
-          class='sm:bg-white/95 sm:backdrop-blur-sm sm:rounded-2xl sm:shadow-xl sm:min-h-[calc(100vh-3rem)] relative'
+          class="sm:bg-white/95 sm:backdrop-blur-sm sm:rounded-2xl sm:shadow-xl sm:min-h-[calc(100vh-3rem)] relative"
         >
-          <div data-astro-transition-persist='navigation'>
-            <Navigation initialUser={user} client:only='react' />
+          <div data-astro-transition-persist="navigation">
+            <Navigation initialUser={user} client:only="react" />
           </div>
-          <main class='container mx-auto px-8 lg:px-12 xl:px-16 2xl:px-24 pb-6 pt-16'>
+          <main class="container mx-auto px-8 lg:px-12 xl:px-16 2xl:px-24 pb-6 pt-16">
             <slot />
           </main>
         </div>
