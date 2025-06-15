@@ -59,14 +59,17 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "npm run dev:e2e",
+    command: process.env.CI ? "npm run preview" : "npm run dev:e2e",
     url: "http://localhost:4321",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !!process.env.CI,
     timeout: 120 * 1000,
     env: {
       ...process.env,
       // Ensure test environment variables are available
       NODE_ENV: "test",
+      // Explicitly set Supabase variables for preview server
+      PUBLIC_SUPABASE_URL: process.env.PUBLIC_SUPABASE_URL || "http://localhost:54321",
+      PUBLIC_SUPABASE_KEY: process.env.PUBLIC_SUPABASE_KEY || "test_key",
     },
   },
 });

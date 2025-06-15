@@ -145,6 +145,18 @@ jobs:
           echo "📋 Contents of .env.test:"
           cat .env.test
 
+      - name: Verify environment variables for Playwright
+        env:
+          PUBLIC_SUPABASE_URL: ${{ env.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_KEY: ${{ env.PUBLIC_SUPABASE_KEY }}
+          NODE_ENV: ${{ env.NODE_ENV }}
+        run: |
+          echo "🔍 Checking environment variables available to Playwright..."
+          echo "PUBLIC_SUPABASE_URL: $PUBLIC_SUPABASE_URL"
+          echo "PUBLIC_SUPABASE_KEY: $PUBLIC_SUPABASE_KEY"
+          echo "NODE_ENV: $NODE_ENV"
+          echo "CI: $CI"
+
       - name: Run E2E tests
         env:
           PUBLIC_SUPABASE_URL: ${{ env.PUBLIC_SUPABASE_URL }}
@@ -160,34 +172,9 @@ jobs:
           echo "  PUBLIC_SUPABASE_KEY: $PUBLIC_SUPABASE_KEY"
           echo "  NODE_ENV: $NODE_ENV"
 
-          # Uruchom preview server w tle
-          npm run preview &
-          PREVIEW_PID=$!
-
-          # Poczekaj aż serwer się uruchomi z retry logic
-          for i in {1..30}; do
-            if curl -f http://localhost:4321 >/dev/null 2>&1; then
-              echo "✅ Server is ready!"
-              break
-            fi
-            echo "⏳ Waiting for server... ($i/30)"
-            sleep 2
-          done
-
-          # Check if server is actually running
-          if ! curl -f http://localhost:4321 >/dev/null 2>&1; then
-            echo "❌ Preview server failed to start!"
-            echo "🔍 Preview server logs:"
-            jobs -p | xargs -I {} sh -c 'ps -p {} && kill {}'
-            exit 1
-          fi
-
-          # Uruchom testy E2E
-          echo "🧪 Running E2E tests..."
+          # Playwright will manage the preview server automatically
+          echo "🧪 Running E2E tests (Playwright will start preview server)..."
           npm run test:e2e
-
-          # Cleanup: stop preview server
-          kill $PREVIEW_PID || true
         timeout-minutes: 15
 
       - name: Upload Playwright report
