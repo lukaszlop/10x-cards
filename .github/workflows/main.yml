@@ -1,0 +1,190 @@
+name: Test and Build main
+
+on:
+  # Uruchomienie po push do main branch
+  push:
+    branches: [main]
+
+  # Możliwość uruchomienia manualnego
+  workflow_dispatch:
+
+  # Uruchomienie na pull requestach do main
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Job 1: Linting i testy jednostkowe
+  test:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+        timeout-minutes: 5
+
+      - name: Run ESLint
+        run: npm run lint
+        timeout-minutes: 3
+
+      - name: Run unit tests with coverage
+        run: npx vitest run --coverage
+        timeout-minutes: 10
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v5
+        if: always()
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+          # token: ${{ secrets.CODECOV_TOKEN }}  # Odkomentuj po dodaniu tokena do GitHub Secrets
+
+  # Job 2: Build produkcyjny
+  build:
+    name: Production Build
+    runs-on: ubuntu-latest
+    needs: test
+    timeout-minutes: 20
+    env:
+      NODE_ENV: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+        timeout-minutes: 5
+
+      - name: Build for production
+        run: npm run build
+        timeout-minutes: 10
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+          retention-days: 7
+
+  # Job 3: Testy E2E na wersji produkcyjnej
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 30
+    env:
+      NODE_ENV: test
+      E2E_USERNAME: test@example.com
+      E2E_PASSWORD: test_password_123
+      PUBLIC_SUPABASE_URL: http://localhost:54321
+      PUBLIC_SUPABASE_KEY: test_key
+      CI: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+        timeout-minutes: 5
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        timeout-minutes: 5
+
+      - name: Create test environment file
+        run: |
+          cat > .env.test << EOF
+          NODE_ENV=${{ env.NODE_ENV }}
+          E2E_USERNAME=${{ env.E2E_USERNAME }}
+          E2E_PASSWORD=${{ env.E2E_PASSWORD }}
+          PUBLIC_SUPABASE_URL=${{ env.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_KEY=${{ env.PUBLIC_SUPABASE_KEY }}
+          EOF
+
+      - name: Run E2E tests
+        run: |
+          # Uruchom preview server w tle
+          npm run preview &
+          # Poczekaj aż serwer się uruchomi z retry logic
+          for i in {1..30}; do
+            if curl -f http://localhost:4321 >/dev/null 2>&1; then
+              echo "Server is ready!"
+              break
+            fi
+            echo "Waiting for server... ($i/30)"
+            sleep 2
+          done
+          # Uruchom testy E2E
+          npm run test:e2e
+        timeout-minutes: 15
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # Job 4: Podsumowanie rezultatów
+  summary:
+    name: Pipeline Summary
+    runs-on: ubuntu-latest
+    needs: [test, build, e2e]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: Check pipeline status
+        run: |
+          echo "=== Pipeline Summary ==="
+          echo "Test job: ${{ needs.test.result }}"
+          echo "Build job: ${{ needs.build.result }}"
+          echo "E2E job: ${{ needs.e2e.result }}"
+          echo "Triggered by: ${{ github.event_name }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+
+          if [[ "${{ needs.test.result }}" == "success" && "${{ needs.build.result }}" == "success" && "${{ needs.e2e.result }}" == "success" ]]; then
+            echo "✅ All pipeline stages completed successfully!"
+          else
+            echo "❌ Pipeline failed - check individual job results"
+            echo "📊 Job results breakdown:"
+            echo "  - Test & Lint: ${{ needs.test.result }}"
+            echo "  - Production Build: ${{ needs.build.result }}"
+            echo "  - E2E Tests: ${{ needs.e2e.result }}"
+            exit 1
+          fi
+        timeout-minutes: 1
