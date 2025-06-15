@@ -144,7 +144,9 @@ export function FlashcardsView() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <Button onClick={handleOpenCreateModal}>Dodaj nową fiszkę</Button>
+        <Button onClick={handleOpenCreateModal} data-test-id="add-flashcard-button">
+          Dodaj nową fiszkę
+        </Button>
       </div>
 
       <FlashcardsList

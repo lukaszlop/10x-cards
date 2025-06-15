@@ -10,7 +10,10 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   output: "server",
   integrations: [react(), sitemap()],
-  server: { port: 3000 },
+  server: {
+    port: 4321, // Use consistent port with Playwright
+    host: true, // Allow external connections for testing
+  },
   vite: {
     plugins: [tailwindcss()],
   },

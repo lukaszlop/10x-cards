@@ -29,9 +29,9 @@ export function FlashcardsList({ flashcards, isLoading, onEdit, onDelete }: Flas
   });
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-test-id="flashcards-list">
       {sortedFlashcards.map((flashcard) => (
-        <Card key={flashcard.id} className="flex flex-col h-[350px]">
+        <Card key={flashcard.id} className="flex flex-col h-[350px]" data-test-id={`flashcard-item-${flashcard.id}`}>
           <CardContent className="flex-grow pt-6 space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
             <div>
               <h3 className="text-sm font-medium text-gray-500">Przód fiszki</h3>
@@ -43,10 +43,20 @@ export function FlashcardsList({ flashcards, isLoading, onEdit, onDelete }: Flas
             </div>
           </CardContent>
           <CardFooter className="flex justify-end gap-2 border-t bg-gray-50/50">
-            <Button variant="outline" size="sm" onClick={() => onEdit(flashcard)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(flashcard)}
+              data-test-id={`edit-flashcard-${flashcard.id}`}
+            >
               Edytuj
             </Button>
-            <Button variant="destructive" size="sm" onClick={() => onDelete(flashcard.id)}>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => onDelete(flashcard.id)}
+              data-test-id={`delete-flashcard-${flashcard.id}`}
+            >
               Usuń
             </Button>
           </CardFooter>

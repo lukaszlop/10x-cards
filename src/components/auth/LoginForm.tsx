@@ -56,7 +56,7 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" data-test-id="login-form">
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="email">
           Adres email
@@ -68,6 +68,7 @@ export function LoginForm() {
           placeholder="twoj@email.com"
           autoComplete="email"
           disabled={isLoading}
+          data-test-id="login-email-input"
         />
         {form.formState.errors.email && <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>}
       </div>
@@ -83,6 +84,7 @@ export function LoginForm() {
           placeholder="••••••••"
           autoComplete="current-password"
           disabled={isLoading}
+          data-test-id="login-password-input"
         />
         {form.formState.errors.password && (
           <p className="text-sm text-red-500">{form.formState.errors.password.message}</p>
@@ -95,7 +97,7 @@ export function LoginForm() {
         </a>
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      <Button type="submit" className="w-full" disabled={isLoading} data-test-id="login-submit-button">
         {isLoading ? "Logowanie..." : "Zaloguj się"}
       </Button>
 

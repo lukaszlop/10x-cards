@@ -1,16 +1,16 @@
-import { Locator, Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 export class HomePage {
   readonly page: Page;
-  readonly heading: Locator;
-  readonly navigateButton: Locator;
-  readonly searchInput: Locator;
+  readonly mainHeading: Locator;
+  readonly generationsCard: Locator;
+  readonly flashcardsCard: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.getByTestId("main-heading");
-    this.navigateButton = page.getByTestId("navigate-btn");
-    this.searchInput = page.getByTestId("search-input");
+    this.mainHeading = page.locator("h1");
+    this.generationsCard = page.locator('.grid a[href="/generations"]');
+    this.flashcardsCard = page.locator('.grid a[href="/flashcards"]');
   }
 
   async goto() {
@@ -21,16 +21,28 @@ export class HomePage {
     return await this.page.title();
   }
 
-  async clickNavigateButton() {
-    await this.navigateButton.click();
+  async getMainHeadingText() {
+    return await this.mainHeading.textContent();
   }
 
-  async search(query: string) {
-    await this.searchInput.fill(query);
-    await this.searchInput.press("Enter");
+  async clickGenerationsCard() {
+    await this.generationsCard.click();
+  }
+
+  async clickFlashcardsCard() {
+    await this.flashcardsCard.click();
   }
 
   async waitForLoad() {
     await this.page.waitForLoadState("networkidle");
+  }
+
+  async expectPageLoaded() {
+    await this.mainHeading.waitFor({ state: "visible" });
+  }
+
+  async expectCardsVisible() {
+    await this.generationsCard.waitFor({ state: "visible" });
+    await this.flashcardsCard.waitFor({ state: "visible" });
   }
 }

@@ -109,6 +109,7 @@ export const Navigation = ({ initialUser }: NavigationProps) => {
                 href="/flashcards"
                 onClick={handleMobileNavClick}
                 className="text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                data-test-id="nav-flashcards-mobile"
               >
                 Moje fiszki
               </a>
@@ -121,6 +122,7 @@ export const Navigation = ({ initialUser }: NavigationProps) => {
                       <button
                         onClick={handleLogout}
                         className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors w-full text-left cursor-pointer"
+                        data-test-id="nav-logout-mobile"
                       >
                         Wyloguj
                       </button>
@@ -161,6 +163,7 @@ export const Navigation = ({ initialUser }: NavigationProps) => {
                 <a
                   href="/flashcards"
                   className="text-gray-900 hover:text-gray-600 px-3 py-2 text-sm font-medium transition-colors flex items-center h-16"
+                  data-test-id="nav-flashcards-desktop"
                 >
                   Moje fiszki
                 </a>
@@ -175,6 +178,7 @@ export const Navigation = ({ initialUser }: NavigationProps) => {
                     <button
                       onClick={handleLogout}
                       className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                      data-test-id="nav-logout-desktop"
                     >
                       Wyloguj
                     </button>

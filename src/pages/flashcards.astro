@@ -4,7 +4,7 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title='Moje Fiszki'>
-  <div class='py-8'>
+  <div class='py-8' data-test-id='flashcards-page'>
     <h1 class='text-4xl font-bold mb-8'>Moje Fiszki</h1>
     <FlashcardsView client:only='react' />
   </div>

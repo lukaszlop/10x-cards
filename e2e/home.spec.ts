@@ -11,45 +11,73 @@ test.describe("Home Page", () => {
     const title = await homePage.getTitle();
 
     // Assert
-    expect(title).toContain("10x Cards");
+    expect(title).toContain("Witaj w 10xCards");
   });
 
-  test("should navigate when button is clicked", async ({ page }) => {
+  test("should display main heading correctly", async ({ page }) => {
     // Arrange
     const homePage = new HomePage(page);
     await homePage.goto();
 
     // Act
-    await homePage.clickNavigateButton();
-    await homePage.waitForLoad();
+    const headingText = await homePage.getMainHeadingText();
 
     // Assert
-    expect(page.url()).toContain("/dashboard");
+    expect(headingText).toContain("Witaj w 10xCards");
   });
 
-  test("should take screenshot for visual comparison", async ({ page }) => {
+  test("should display navigation cards", async ({ page }) => {
     // Arrange
     const homePage = new HomePage(page);
-
-    // Act
     await homePage.goto();
-    await homePage.waitForLoad();
 
-    // Assert
-    await expect(page).toHaveScreenshot("home-page.png");
+    // Act & Assert
+    await homePage.expectPageLoaded();
+    await homePage.expectCardsVisible();
+
+    // Verify cards have correct hrefs without clicking
+    const generationsHref = await homePage.generationsCard.getAttribute("href");
+    const flashcardsHref = await homePage.flashcardsCard.getAttribute("href");
+
+    expect(generationsHref).toBe("/generations");
+    expect(flashcardsHref).toBe("/flashcards");
   });
 
-  test("should search functionality work correctly", async ({ page }) => {
+  test("should display correct content on cards", async ({ page }) => {
     // Arrange
     const homePage = new HomePage(page);
-    const searchQuery = "test query";
     await homePage.goto();
 
     // Act
-    await homePage.search(searchQuery);
-    await homePage.waitForLoad();
+    const generationsText = await homePage.generationsCard.textContent();
+    const flashcardsText = await homePage.flashcardsCard.textContent();
 
     // Assert
-    expect(page.url()).toContain(`search=${encodeURIComponent(searchQuery)}`);
+    expect(generationsText).toContain("Generowanie fiszek");
+    expect(flashcardsText).toContain("Moje fiszki");
+  });
+
+  test("should have proper page structure", async ({ page }) => {
+    // Arrange
+    const homePage = new HomePage(page);
+    await homePage.goto();
+
+    // Act & Assert - Verify key elements are present
+    await homePage.expectPageLoaded();
+
+    // Check main heading
+    await expect(homePage.mainHeading).toBeVisible();
+
+    // Check both cards are visible
+    await expect(homePage.generationsCard).toBeVisible();
+    await expect(homePage.flashcardsCard).toBeVisible();
+
+    // Check page has proper grid layout
+    const gridContainer = page.locator(".grid.grid-cols-1.md\\:grid-cols-2");
+    await expect(gridContainer).toBeVisible();
+
+    // Check description text is present
+    const description = page.locator('text="Twoje centrum do inteligentnego tworzenia i zarządzania fiszkami."');
+    await expect(description).toBeVisible();
   });
 });

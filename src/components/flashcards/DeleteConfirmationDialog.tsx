@@ -18,7 +18,7 @@ interface DeleteConfirmationDialogProps {
 export function DeleteConfirmationDialog({ isOpen, onConfirm, onCancel }: DeleteConfirmationDialogProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onCancel}>
-      <AlertDialogContent>
+      <AlertDialogContent data-test-id="delete-confirmation-dialog">
         <AlertDialogHeader>
           <AlertDialogTitle>Usuń fiszkę</AlertDialogTitle>
           <AlertDialogDescription>
@@ -26,8 +26,12 @@ export function DeleteConfirmationDialog({ isOpen, onConfirm, onCancel }: Delete
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>Anuluj</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>Usuń</AlertDialogAction>
+          <AlertDialogCancel onClick={onCancel} data-test-id="delete-cancel-button">
+            Anuluj
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} data-test-id="delete-confirm-button">
+            Usuń
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

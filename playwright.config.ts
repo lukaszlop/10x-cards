@@ -1,4 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv";
+
+// Load test environment variables
+dotenv.config({ path: ".env.test" });
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -15,6 +19,15 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
+
+  /* Global test timeout */
+  timeout: 60 * 1000, // 60 seconds per test
+
+  /* Expect timeout for assertions */
+  expect: {
+    timeout: 15 * 1000, // 15 seconds for expect assertions
+  },
+
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -26,8 +39,14 @@ export default defineConfig({
     /* Collect screenshots on failure */
     screenshot: "only-on-failure",
 
-    /* Configure data-testid attribute */
-    testIdAttribute: "data-testid",
+    /* Configure data-test-id attribute (not data-testid) */
+    testIdAttribute: "data-test-id",
+
+    /* Action timeout for individual actions */
+    actionTimeout: 15000, // 15 seconds for actions like click, fill, etc.
+
+    /* Navigation timeout */
+    navigationTimeout: 30000, // 30 seconds for navigation
   },
 
   /* Configure projects for major browsers */
@@ -40,9 +59,14 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "npm run dev",
+    command: "npm run dev:e2e",
     url: "http://localhost:4321",
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    env: {
+      ...process.env,
+      // Ensure test environment variables are available
+      NODE_ENV: "test",
+    },
   },
 });
