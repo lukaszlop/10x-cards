@@ -30,6 +30,7 @@ interface FlashcardFormModalProps {
 export function FlashcardFormModal({ isOpen, mode, initialData, onSubmit, onClose }: FlashcardFormModalProps) {
   const form = useForm<z.infer<typeof flashcardFormSchema>>({
     resolver: zodResolver(flashcardFormSchema),
+    mode: "onChange",
     defaultValues: {
       front: initialData?.front || "",
       back: initialData?.back || "",

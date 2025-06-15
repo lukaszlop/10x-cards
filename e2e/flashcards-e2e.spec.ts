@@ -45,6 +45,9 @@ test.describe("Flashcards E2E Flow", () => {
     await flashcardsPage.expectPageVisible();
     await flashcardsPage.expectAddButtonVisible();
 
+    // Wait for page to fully load and stabilize
+    await page.waitForTimeout(5000);
+
     // Step 4: Click "Add new flashcard" button
     await flashcardsPage.clickAddFlashcard();
 
@@ -109,6 +112,9 @@ test.describe("Flashcards E2E Flow", () => {
     await navigation.clickFlashcardsLink();
     await flashcardsPage.expectPageVisible();
 
+    // Wait for page to fully load and stabilize
+    await page.waitForTimeout(5000);
+
     // Test empty form validation
     await flashcardsPage.clickAddFlashcard();
     await flashcardModal.waitForModalToOpen();
@@ -143,6 +149,9 @@ test.describe("Flashcards E2E Flow", () => {
 
     await navigation.clickFlashcardsLink();
     await flashcardsPage.expectPageVisible();
+
+    // Wait for page to fully load and stabilize
+    await page.waitForTimeout(5000);
 
     // First create a flashcard to edit
     await flashcardsPage.clickAddFlashcard();

@@ -309,7 +309,7 @@ describe("FlashcardFormModal", () => {
   });
 
   describe("Form Validation", () => {
-    it("should show validation error for empty front field", async () => {
+    it("should disable submit button when front field is empty", async () => {
       // Arrange
       const user = userEvent.setup();
       render(<FlashcardFormModal {...defaultProps} />);
@@ -317,18 +317,20 @@ describe("FlashcardFormModal", () => {
       const backInput = screen.getByPlaceholderText("Wpisz odpowiedź...");
       const submitButton = screen.getByRole("button", { name: "Dodaj" });
 
-      // Act - Fill only back field and submit
+      // Act - Fill only back field
       await user.type(backInput, "Some answer");
-      await user.click(submitButton);
 
-      // Assert
+      // Assert - Button should remain disabled when front field is empty
       await waitFor(() => {
-        expect(screen.getByText("Przód fiszki jest wymagany")).toBeInTheDocument();
+        expect(submitButton).toBeDisabled();
       });
+
+      // Try clicking the disabled button - should not call onSubmit
+      await user.click(submitButton);
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
 
-    it("should show validation error for empty back field", async () => {
+    it("should disable submit button when back field is empty", async () => {
       // Arrange
       const user = userEvent.setup();
       render(<FlashcardFormModal {...defaultProps} />);
@@ -336,14 +338,16 @@ describe("FlashcardFormModal", () => {
       const frontInput = screen.getByPlaceholderText("Wpisz pytanie...");
       const submitButton = screen.getByRole("button", { name: "Dodaj" });
 
-      // Act - Fill only front field and submit
+      // Act - Fill only front field
       await user.type(frontInput, "Some question");
-      await user.click(submitButton);
 
-      // Assert
+      // Assert - Button should remain disabled when back field is empty
       await waitFor(() => {
-        expect(screen.getByText("Tył fiszki jest wymagany")).toBeInTheDocument();
+        expect(submitButton).toBeDisabled();
       });
+
+      // Try clicking the disabled button - should not call onSubmit
+      await user.click(submitButton);
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
 
