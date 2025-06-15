@@ -10,7 +10,7 @@ interface User {
 
 declare namespace App {
   interface Locals {
-    supabase: SupabaseClient<Database>;
+    supabase: SupabaseClient<Database> | null;
     session: Session | null;
     user: User | null;
   }
