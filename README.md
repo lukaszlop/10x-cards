@@ -25,6 +25,14 @@
 - **Frontend:** Astro 5, React 19, TypeScript 5, Tailwind CSS 4, Shadcn/ui
 - **Backend:** Supabase for database and authentication management
 - **AI Integration:** Communication with LLM models via Openrouter.ai for generating flashcards
+- **Testing:**
+  - **Unit Testing:** Vitest + React Testing Library + @testing-library/jest-dom
+  - **E2E Testing:** Playwright + @playwright/test
+  - **Integration Testing:** MSW (Mock Service Worker) + Supertest + Vitest
+  - **Performance Testing:** Lighthouse CI + k6
+  - **Accessibility Testing:** @axe-core/playwright + Pa11y
+  - **Security Testing:** Snyk + OWASP ZAP
+  - **Test Data:** Faker.js + Fishery (factory pattern) + Testcontainers
 - **CI/CD & Hosting:** GitHub Actions for pipeline automation and DigitalOcean for hosting
 
 ## Getting Started Locally
@@ -66,6 +74,11 @@
 - **`npm run lint`**: Lints the project files.
 - **`npm run lint:fix`**: Automatically fixes linting issues.
 - **`npm run format`**: Formats the codebase using Prettier.
+- **`npm run test`**: Runs unit tests with Vitest.
+- **`npm run test:watch`**: Runs unit tests in watch mode.
+- **`npm run test:coverage`**: Runs unit tests with coverage report.
+- **`npm run test:e2e`**: Runs end-to-end tests with Playwright.
+- **`npm run test:e2e:ui`**: Runs E2E tests with Playwright UI mode.
 
 ## Project Scope
 
