@@ -85,6 +85,7 @@
     "prettier-plugin-astro": "0.14.1",
     "supertest": "^7.0.0",
     "typescript-eslint": "8.28.0",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^2.1.8"
   },
   "lint-staged": {
