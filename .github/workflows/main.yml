@@ -96,8 +96,8 @@ jobs:
     timeout-minutes: 30
     env:
       NODE_ENV: test
-      E2E_USERNAME: test@example.com
-      E2E_PASSWORD: test_password_123
+      E2E_USERNAME: test@test.com
+      E2E_PASSWORD: Testy123
       PUBLIC_SUPABASE_URL: http://localhost:54321
       PUBLIC_SUPABASE_KEY: test_key
       CI: true
