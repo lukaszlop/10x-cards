@@ -1,8 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 import dotenv from "dotenv";
 
-// Load test environment variables
-dotenv.config({ path: ".env.test" });
+// Load test environment variables (only if .env.test exists - for local development)
+try {
+  dotenv.config({ path: ".env.test" });
+} catch {
+  // .env.test doesn't exist (e.g., in CI) - that's fine, we'll use environment variables directly
+}
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -69,12 +73,16 @@ export default defineConfig({
     reuseExistingServer: !!process.env.CI,
     timeout: 120 * 1000,
     env: {
+      // Pass through all environment variables
       ...process.env,
-      // Ensure test environment variables are available
+      // Ensure test mode is set
       NODE_ENV: "test",
-      // Explicitly set Supabase variables for preview server
-      PUBLIC_SUPABASE_URL: process.env.PUBLIC_SUPABASE_URL || "http://localhost:54321",
-      PUBLIC_SUPABASE_KEY: process.env.PUBLIC_SUPABASE_KEY || "test_key",
+      // Override with explicitly set test variables (this ensures they take precedence)
+      ...(process.env.PUBLIC_SUPABASE_URL && { PUBLIC_SUPABASE_URL: process.env.PUBLIC_SUPABASE_URL }),
+      ...(process.env.PUBLIC_SUPABASE_KEY && { PUBLIC_SUPABASE_KEY: process.env.PUBLIC_SUPABASE_KEY }),
+      ...(process.env.E2E_USERNAME && { E2E_USERNAME: process.env.E2E_USERNAME }),
+      ...(process.env.E2E_PASSWORD && { E2E_PASSWORD: process.env.E2E_PASSWORD }),
+      ...(process.env.CI && { CI: process.env.CI }),
     },
   },
 });
