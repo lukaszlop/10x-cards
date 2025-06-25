@@ -26,10 +26,11 @@ Add the following secrets one by one:
 
 #### Test User Credentials
 
-| Secret Name    | Description                   | Example Value      |
-| -------------- | ----------------------------- | ------------------ |
-| `E2E_USERNAME` | Email of test user account    | `test@example.com` |
-| `E2E_PASSWORD` | Password of test user account | `TestPassword123!` |
+| Secret Name       | Description                   | Example Value                          |
+| ----------------- | ----------------------------- | -------------------------------------- |
+| `E2E_USERNAME`    | Email of test user account    | `test@example.com`                     |
+| `E2E_PASSWORD`    | Password of test user account | `TestPassword123!`                     |
+| `E2E_USERNAME_ID` | UUID of test user account     | `62b6b16e-5398-4898-a42a-b26558b55ef6` |
 
 ### 3. Test Database Setup
 
@@ -84,6 +85,9 @@ Create a test user in your Supabase project:
 2. Click **Add user**
 3. Use the email/password you configured in GitHub secrets
 4. Confirm the user's email if required
+5. **Copy the user UUID** - you'll need this for the `E2E_USERNAME_ID` secret
+   - Click on the test user in the Users list
+   - Copy the **ID** field (this is the UUID)
 
 ### 6. Verify Setup
 

@@ -6,6 +6,8 @@
 - [Project Description](#project-description)
 - [Tech Stack](#tech-stack)
 - [Getting Started Locally](#getting-started-locally)
+- [Testing](#testing)
+- [CI/CD Setup](#cicd-setup)
 - [Available Scripts](#available-scripts)
 - [Project Scope](#project-scope)
 - [Project Status](#project-status)
@@ -65,19 +67,129 @@
 
    The application will be available at `http://localhost:3000` or the URL provided in your terminal.
 
+## Testing
+
+This project uses a comprehensive testing strategy with multiple levels of testing to ensure code quality and reliability.
+
+### Testing Stack
+
+- **Unit Tests**: Vitest + React Testing Library + @testing-library/jest-dom
+- **E2E Tests**: Playwright + @playwright/test
+- **API Mocking**: MSW (Mock Service Worker)
+- **Test Data**: Faker.js + Fishery (factory pattern)
+
+### Running Tests
+
+```bash
+# Unit Tests
+npm run test                 # Run once
+npm run test:watch          # Watch mode
+npm run test:ui             # Interactive UI
+npm run test:coverage       # With coverage report
+
+# E2E Tests
+npm run test:e2e            # Run E2E tests
+npm run test:e2e:ui         # E2E tests with UI
+npm run test:e2e:codegen    # Generate test code
+```
+
+### Test Structure
+
+```
+├── src/test/               # Unit test setup and mocks
+├── e2e/                    # E2E tests and page objects
+├── e2e/page-objects/       # Page Object Model classes
+└── src/factories/          # Test data factories
+```
+
+### Writing Tests
+
+**Unit Tests** - Use Arrange-Act-Assert pattern:
+
+```typescript
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+test('should handle user interaction', async () => {
+  // Arrange
+  const user = userEvent.setup();
+
+  // Act
+  render(<Component />);
+  await user.click(screen.getByTestId('submit-button'));
+
+  // Assert
+  expect(screen.getByText('Success')).toBeInTheDocument();
+});
+```
+
+**E2E Tests** - Use Page Object Model:
+
+```typescript
+import { test, expect } from "@playwright/test";
+import { HomePage } from "./page-objects/HomePage";
+
+test("should complete user workflow", async ({ page }) => {
+  const homePage = new HomePage(page);
+  await homePage.goto();
+  await homePage.performAction();
+  await expect(page).toHaveURL(/success/);
+});
+```
+
+### Testing Best Practices
+
+- Use `data-testid` attributes for reliable element selection
+- Mock external dependencies with MSW
+- Use factories for consistent test data
+- Test user interactions, not implementation details
+- Maintain 80%+ code coverage
+- Use TypeScript for type safety in tests
+
+### Local E2E Setup
+
+For local E2E testing, create `.env.test` file:
+
+```bash
+# Test environment
+NODE_ENV=test
+E2E_USERNAME=your-test-email@example.com
+E2E_PASSWORD=your-test-password
+E2E_USERNAME_ID=your-test-user-uuid
+PUBLIC_SUPABASE_URL=your-test-supabase-url
+PUBLIC_SUPABASE_KEY=your-test-supabase-key
+```
+
 ## CI/CD Setup
 
-This project includes automated testing and deployment via GitHub Actions. To set up CI/CD properly:
+This project includes automated testing and deployment via GitHub Actions. The pipeline runs on every push and pull request to ensure code quality.
 
-1. **For E2E Testing:** Follow the [CI/CD Setup Guide](README-CI-SETUP.md) to configure GitHub secrets for automated testing
-2. **Testing Documentation:** See [TESTING-E2E.md](TESTING-E2E.md) for detailed E2E testing instructions
+### Pipeline Overview
 
 The CI/CD pipeline includes:
 
-- **Linting & Unit Tests**: Code quality checks and unit tests
-- **Production Build**: Creates optimized build artifacts
-- **E2E Tests**: Runs end-to-end tests against a real test database
-- **Test Reports**: Generates coverage and test reports
+- **Lint & Test**: ESLint checks and unit tests with Vitest
+- **E2E Tests**: End-to-end tests with Playwright against a real test database
+- **Build**: Production build verification
+- **Reports**: Test coverage and Playwright reports
+
+### Quick Setup
+
+1. **Fork/Clone** the repository
+2. **Configure GitHub Secrets** - Follow the [CI/CD Setup Guide](README-CI-SETUP.md)
+3. **Push to main** - Pipeline runs automatically
+
+### Required GitHub Secrets
+
+For E2E tests to work in CI, you need these secrets:
+
+- `TEST_SUPABASE_URL` - Test database URL
+- `TEST_SUPABASE_KEY` - Test database anon key
+- `E2E_USERNAME` - Test user email
+- `E2E_PASSWORD` - Test user password
+- `E2E_USERNAME_ID` - Test user UUID
+
+📋 **Detailed setup instructions:** [CI/CD Setup Guide](README-CI-SETUP.md)
 
 ## Available Scripts
 

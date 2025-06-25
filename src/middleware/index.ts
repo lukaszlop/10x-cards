@@ -6,14 +6,12 @@ const authRoutes = ["/auth/login", "/auth/register"];
 
 // Create mock user for test environment (compatible with SupabaseUser type)
 const createMockTestUser = () => {
+  const testUserId = import.meta.env.E2E_USERNAME_ID;
   const testEmail = import.meta.env.E2E_USERNAME;
 
-  if (!testEmail) {
-    throw new Error("E2E_USERNAME must be set in test environment");
+  if (!testUserId || !testEmail) {
+    throw new Error("E2E_USERNAME_ID and E2E_USERNAME must be set in test environment");
   }
-
-  // Use deterministic UUID for test user based on email
-  const testUserId = "e2e-test-user-" + testEmail.replace(/[^a-z0-9]/gi, "-").toLowerCase();
 
   return {
     id: testUserId,

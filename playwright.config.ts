@@ -82,6 +82,7 @@ export default defineConfig({
       ...(process.env.PUBLIC_SUPABASE_KEY && { PUBLIC_SUPABASE_KEY: process.env.PUBLIC_SUPABASE_KEY }),
       ...(process.env.E2E_USERNAME && { E2E_USERNAME: process.env.E2E_USERNAME }),
       ...(process.env.E2E_PASSWORD && { E2E_PASSWORD: process.env.E2E_PASSWORD }),
+      ...(process.env.E2E_USERNAME_ID && { E2E_USERNAME_ID: process.env.E2E_USERNAME_ID }),
       ...(process.env.CI && { CI: process.env.CI }),
     },
   },

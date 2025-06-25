@@ -99,6 +99,7 @@ jobs:
       # Use GitHub secrets for real test database credentials
       E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
       E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      E2E_USERNAME_ID: ${{ secrets.E2E_USERNAME_ID }}
       PUBLIC_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
       PUBLIC_SUPABASE_KEY: ${{ secrets.TEST_SUPABASE_KEY }}
       CI: true
@@ -132,6 +133,10 @@ jobs:
             echo "❌ E2E_PASSWORD secret is not set"
             exit 1
           fi
+          if [[ -z "${{ secrets.E2E_USERNAME_ID }}" ]]; then
+            echo "❌ E2E_USERNAME_ID secret is not set"
+            exit 1
+          fi
           if [[ -z "${{ secrets.TEST_SUPABASE_URL }}" ]]; then
             echo "❌ TEST_SUPABASE_URL secret is not set"
             exit 1
@@ -148,6 +153,7 @@ jobs:
           NODE_ENV=test
           E2E_USERNAME=${{ secrets.E2E_USERNAME }}
           E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}
+          E2E_USERNAME_ID=${{ secrets.E2E_USERNAME_ID }}
           PUBLIC_SUPABASE_URL=${{ secrets.TEST_SUPABASE_URL }}
           PUBLIC_SUPABASE_KEY=${{ secrets.TEST_SUPABASE_KEY }}
           EOF
