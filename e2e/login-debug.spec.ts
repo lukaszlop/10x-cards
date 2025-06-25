@@ -50,40 +50,50 @@ test.describe("Login Debug Tests", () => {
     console.log("Step 4: Submit form and monitor network");
     await loginPage.clickSubmit();
 
-    // Wait a bit and check current URL
-    await page.waitForTimeout(2000);
-    const currentUrl = page.url();
-    console.log(`Current URL after submission: ${currentUrl}`);
+    try {
+      // Wait for redirect away from login page (same logic as loginSimple)
+      await page.waitForURL((url) => !url.pathname.startsWith("/auth/login"), {
+        timeout: 10000, // 10 seconds to handle 2s delay + CI latency
+      });
 
-    // Check for any error messages
-    const errorMessage = await loginPage.getErrorMessage();
-    if (errorMessage) {
-      console.log(`Error message found: ${errorMessage}`);
-    }
-
-    // Check if we're still on login page
-    if (currentUrl.includes("/auth/login")) {
-      console.log("Still on login page - checking for form validation errors");
-
-      // Look for validation errors
-      const validationErrors = await page.locator(".text-red-500, .text-destructive").allTextContents();
-      console.log("Validation errors:", validationErrors);
-
-      // Only check input values if still on login page
-      try {
-        const emailInput = page.getByTestId("login-email-input");
-        const passwordInput = page.getByTestId("login-password-input");
-
-        const emailValue = await emailInput.inputValue();
-        const passwordValue = await passwordInput.inputValue();
-        console.log(`Email input value: ${emailValue}`);
-        console.log(`Password input has value: ${passwordValue ? "Yes" : "No"}`);
-      } catch {
-        console.log("Could not check input values - possibly redirected already");
-      }
-    } else {
-      console.log("Login appears to have succeeded - redirected to:", currentUrl);
+      const currentUrl = page.url();
+      console.log(`Current URL after successful redirect: ${currentUrl}`);
+      console.log("✅ Login appears to have succeeded");
       await expect(page).toHaveURL("/", { timeout: 5000 });
+    } catch {
+      // If redirect timeout, check for errors
+      const currentUrl = page.url();
+      console.log(`Current URL after timeout: ${currentUrl}`);
+
+      // Check for any error messages
+      const errorMessage = await loginPage.getErrorMessage();
+      if (errorMessage) {
+        console.log(`Error message found: ${errorMessage}`);
+      }
+
+      // Check if we're still on login page
+      if (currentUrl.includes("/auth/login")) {
+        console.log("Still on login page - checking for form validation errors");
+
+        // Look for validation errors
+        const validationErrors = await page.locator(".text-red-500, .text-destructive").allTextContents();
+        console.log("Validation errors:", validationErrors);
+
+        // Only check input values if still on login page
+        try {
+          const emailInput = page.getByTestId("login-email-input");
+          const passwordInput = page.getByTestId("login-password-input");
+
+          const emailValue = await emailInput.inputValue();
+          const passwordValue = await passwordInput.inputValue();
+          console.log(`Email input value: ${emailValue}`);
+          console.log(`Password input has value: ${passwordValue ? "Yes" : "No"}`);
+        } catch {
+          console.log("Could not check input values - possibly redirected already");
+        }
+
+        throw new Error("Login debug test failed - still on login page");
+      }
     }
   });
 
@@ -101,16 +111,20 @@ test.describe("Login Debug Tests", () => {
     console.log("Form filled, clicking submit");
     await page.getByTestId("login-submit-button").click();
 
-    // Wait for either success or error
-    await page.waitForTimeout(5000);
+    try {
+      // Wait for redirect away from login page (consistent with other tests)
+      await page.waitForURL((url) => !url.pathname.startsWith("/auth/login"), {
+        timeout: 10000, // 10 seconds for CI reliability
+      });
 
-    const finalUrl = page.url();
-    console.log(`Final URL: ${finalUrl}`);
-
-    if (finalUrl === "http://localhost:4321/") {
+      const finalUrl = page.url();
+      console.log(`Final URL: ${finalUrl}`);
       console.log("✅ Login successful");
-    } else {
+    } catch {
+      const finalUrl = page.url();
+      console.log(`Final URL: ${finalUrl}`);
       console.log("❌ Login failed or incomplete");
+      throw new Error("Simple login test failed");
     }
   });
 
