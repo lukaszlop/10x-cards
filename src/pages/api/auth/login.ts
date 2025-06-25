@@ -25,12 +25,13 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
       // Set mock session cookie
       cookies.set("sb-access-token", "mock-session-token", {
         path: "/",
-        httpOnly: true,
+        httpOnly: false, // Set to false for easier debugging in tests
         secure: false, // Set to false for local testing
         sameSite: "lax",
+        maxAge: 3600, // 1 hour
       });
 
-      console.log(`[TEST MODE] Login successful for: ${email}`);
+      console.log(`[TEST MODE] Login successful for: ${email}, cookie set`);
       return new Response(JSON.stringify({ message: "Zalogowano pomyślnie" }), {
         status: 200,
         headers: { "Content-Type": "application/json" },

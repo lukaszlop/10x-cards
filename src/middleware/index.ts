@@ -6,12 +6,14 @@ const authRoutes = ["/auth/login", "/auth/register"];
 
 // Create mock user for test environment (compatible with SupabaseUser type)
 const createMockTestUser = () => {
-  const testUserId = import.meta.env.E2E_USERNAME_ID;
   const testEmail = import.meta.env.E2E_USERNAME;
 
-  if (!testUserId || !testEmail) {
-    throw new Error("E2E_USERNAME_ID and E2E_USERNAME must be set in test environment");
+  if (!testEmail) {
+    throw new Error("E2E_USERNAME must be set in test environment");
   }
+
+  // Use deterministic UUID for test user based on email
+  const testUserId = "e2e-test-user-" + testEmail.replace(/[^a-z0-9]/gi, "-").toLowerCase();
 
   return {
     id: testUserId,
@@ -33,6 +35,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // In test environment, use mock authentication
   if (import.meta.env.NODE_ENV === "test" || import.meta.env.CI) {
+    console.log(`[MIDDLEWARE TEST] Path: ${currentPath}`);
+
     // Mock Supabase client for test environment
     context.locals.supabase = createSupabaseServer(context);
 
@@ -41,17 +45,26 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const isLoggedIn =
       sessionCookie?.value === "mock-session-token" || context.url.searchParams.get("test_auth") === "true";
 
+    console.log(`[MIDDLEWARE TEST] Session cookie: ${sessionCookie?.value}, isLoggedIn: ${isLoggedIn}`);
+
     if (isLoggedIn) {
-      const mockTestUser = createMockTestUser();
-      context.locals.user = mockTestUser;
-      context.locals.session = {
-        access_token: "mock-access-token",
-        refresh_token: "mock-refresh-token",
-        expires_in: 3600,
-        expires_at: Date.now() + 3600000,
-        token_type: "bearer",
-        user: mockTestUser,
-      };
+      try {
+        const mockTestUser = createMockTestUser();
+        context.locals.user = mockTestUser;
+        context.locals.session = {
+          access_token: "mock-access-token",
+          refresh_token: "mock-refresh-token",
+          expires_in: 3600,
+          expires_at: Date.now() + 3600000,
+          token_type: "bearer",
+          user: mockTestUser,
+        };
+        console.log(`[MIDDLEWARE TEST] Mock user created: ${mockTestUser.email}`);
+      } catch (error) {
+        console.error(`[MIDDLEWARE TEST] Error creating mock user:`, error);
+        context.locals.user = null;
+        context.locals.session = null;
+      }
     } else {
       context.locals.user = null;
       context.locals.session = null;
