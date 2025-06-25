@@ -39,19 +39,26 @@ export class LoginPage {
     await this.fillPassword(password);
     await this.clickSubmit();
 
-    // Wait for either redirect or stay on current page
-    await this.page.waitForTimeout(5000); // Wait 5 seconds for any processing
+    try {
+      // Wait for redirect away from login page (with generous timeout for CI)
+      await this.page.waitForURL((url) => !url.pathname.startsWith("/auth/login"), {
+        timeout: 10000, // 10 seconds should cover the 2s delay + network latency
+      });
 
-    const currentUrl = this.page.url();
-    console.log(`After login - Current URL: ${currentUrl}`);
+      const currentUrl = this.page.url();
+      console.log(`After login - Current URL: ${currentUrl}`);
+    } catch {
+      // If redirect timeout, check for errors
+      const currentUrl = this.page.url();
+      console.log(`Login timeout - Current URL: ${currentUrl}`);
 
-    // Check if still on login page - if so, look for errors
-    if (currentUrl.includes("/auth/login")) {
-      const errorMessage = await this.getErrorMessage();
-      if (errorMessage) {
-        throw new Error(`Login failed: ${errorMessage}`);
-      } else {
-        throw new Error(`Login failed - still on login page without error message. URL: ${currentUrl}`);
+      if (currentUrl.includes("/auth/login")) {
+        const errorMessage = await this.getErrorMessage();
+        if (errorMessage) {
+          throw new Error(`Login failed: ${errorMessage}`);
+        } else {
+          throw new Error(`Login failed - still on login page without error message. URL: ${currentUrl}`);
+        }
       }
     }
   }
