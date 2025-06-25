@@ -15,10 +15,19 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
   // In test environment, return mock responses
   if (import.meta.env.NODE_ENV === "test" || import.meta.env.CI) {
     console.log(`[TEST MODE] Login attempt: ${email}`);
+    console.log(`[TEST MODE] NODE_ENV: ${import.meta.env.NODE_ENV}`);
+    console.log(`[TEST MODE] CI: ${import.meta.env.CI}`);
 
     // Get test credentials from environment variables
     const testEmail = import.meta.env.E2E_USERNAME;
     const testPassword = import.meta.env.E2E_PASSWORD;
+
+    console.log(`[TEST MODE] Expected email: ${testEmail}`);
+    console.log(`[TEST MODE] Expected password: ${testPassword ? "[SET]" : "[NOT SET]"}`);
+    console.log(`[TEST MODE] Received email: ${email}`);
+    console.log(`[TEST MODE] Received password: ${password ? "[SET]" : "[NOT SET]"}`);
+    console.log(`[TEST MODE] Email match: ${email === testEmail}`);
+    console.log(`[TEST MODE] Password match: ${password === testPassword}`);
 
     // Mock successful login for test credentials
     if (email === testEmail && password === testPassword) {
