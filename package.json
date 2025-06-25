@@ -7,7 +7,6 @@
     "dev:e2e": "astro dev --mode test",
     "build": "astro build",
     "preview": "astro preview",
-    "preview:e2e": "astro preview --mode test",
     "astro": "astro",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

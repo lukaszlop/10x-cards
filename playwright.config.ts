@@ -68,9 +68,9 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: process.env.CI ? "npm run preview:e2e" : "npm run dev:e2e",
+    command: "npm run dev:e2e", // Always use dev mode for E2E tests
     url: "http://localhost:4321",
-    reuseExistingServer: !!process.env.CI,
+    reuseExistingServer: false, // Always start fresh server for consistent results
     timeout: 120 * 1000,
     env: {
       // Pass through all environment variables
