@@ -65,6 +65,20 @@
 
    The application will be available at `http://localhost:3000` or the URL provided in your terminal.
 
+## CI/CD Setup
+
+This project includes automated testing and deployment via GitHub Actions. To set up CI/CD properly:
+
+1. **For E2E Testing:** Follow the [CI/CD Setup Guide](README-CI-SETUP.md) to configure GitHub secrets for automated testing
+2. **Testing Documentation:** See [TESTING-E2E.md](TESTING-E2E.md) for detailed E2E testing instructions
+
+The CI/CD pipeline includes:
+
+- **Linting & Unit Tests**: Code quality checks and unit tests
+- **Production Build**: Creates optimized build artifacts
+- **E2E Tests**: Runs end-to-end tests against a real test database
+- **Test Reports**: Generates coverage and test reports
+
 ## Available Scripts
 
 - **`npm run dev`**: Starts the development server.
