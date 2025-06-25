@@ -69,14 +69,18 @@ test.describe("Login Debug Tests", () => {
       const validationErrors = await page.locator(".text-red-500, .text-destructive").allTextContents();
       console.log("Validation errors:", validationErrors);
 
-      // Check if form inputs have error states
-      const emailInput = page.getByTestId("login-email-input");
-      const passwordInput = page.getByTestId("login-password-input");
+      // Only check input values if still on login page
+      try {
+        const emailInput = page.getByTestId("login-email-input");
+        const passwordInput = page.getByTestId("login-password-input");
 
-      const emailValue = await emailInput.inputValue();
-      const passwordValue = await passwordInput.inputValue();
-      console.log(`Email input value: ${emailValue}`);
-      console.log(`Password input has value: ${passwordValue ? "Yes" : "No"}`);
+        const emailValue = await emailInput.inputValue();
+        const passwordValue = await passwordInput.inputValue();
+        console.log(`Email input value: ${emailValue}`);
+        console.log(`Password input has value: ${passwordValue ? "Yes" : "No"}`);
+      } catch {
+        console.log("Could not check input values - possibly redirected already");
+      }
     } else {
       console.log("Login appears to have succeeded - redirected to:", currentUrl);
       await expect(page).toHaveURL("/", { timeout: 5000 });

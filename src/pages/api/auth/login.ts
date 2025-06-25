@@ -16,8 +16,12 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
   if (import.meta.env.NODE_ENV === "test" || import.meta.env.CI) {
     console.log(`[TEST MODE] Login attempt: ${email}`);
 
-    // Mock successful login for test credentials - using actual test credentials
-    if (email === "test@test.com" && password === "Testy123") {
+    // Get test credentials from environment variables
+    const testEmail = import.meta.env.E2E_USERNAME;
+    const testPassword = import.meta.env.E2E_PASSWORD;
+
+    // Mock successful login for test credentials
+    if (email === testEmail && password === testPassword) {
       // Set mock session cookie
       cookies.set("sb-access-token", "mock-session-token", {
         path: "/",
@@ -34,7 +38,7 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
     }
 
     // Mock failed login
-    console.log(`[TEST MODE] Login failed for: ${email}`);
+    console.log(`[TEST MODE] Login failed for: ${email} (expected: ${testEmail})`);
     return new Response(JSON.stringify({ error: "Nieprawidłowy email lub hasło" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },

@@ -4,19 +4,28 @@ import { defineMiddleware } from "astro:middleware";
 const protectedRoutes = ["/generations", "/flashcards"];
 const authRoutes = ["/auth/login", "/auth/register"];
 
-// Mock user for test environment (compatible with SupabaseUser type)
-const mockTestUser = {
-  id: "test-user-123",
-  email: "test@test.com",
-  aud: "authenticated",
-  role: "authenticated",
-  email_confirmed_at: new Date().toISOString(),
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  app_metadata: {},
-  user_metadata: {},
-  identities: [],
-  factors: [],
+// Create mock user for test environment (compatible with SupabaseUser type)
+const createMockTestUser = () => {
+  const testUserId = import.meta.env.E2E_USERNAME_ID;
+  const testEmail = import.meta.env.E2E_USERNAME;
+
+  if (!testUserId || !testEmail) {
+    throw new Error("E2E_USERNAME_ID and E2E_USERNAME must be set in test environment");
+  }
+
+  return {
+    id: testUserId,
+    email: testEmail,
+    aud: "authenticated",
+    role: "authenticated",
+    email_confirmed_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    app_metadata: {},
+    user_metadata: {},
+    identities: [],
+    factors: [],
+  };
 };
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -24,10 +33,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // In test environment, use mock authentication
   if (import.meta.env.NODE_ENV === "test" || import.meta.env.CI) {
-    console.log(`[TEST MODE] Processing request for: ${currentPath}`);
-
     // Mock Supabase client for test environment
-    context.locals.supabase = null; // Not needed in tests
+    context.locals.supabase = createSupabaseServer(context);
 
     // Determine if user should be "logged in" based on session cookie or default
     const sessionCookie = context.cookies.get("sb-access-token");
@@ -35,6 +42,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       sessionCookie?.value === "mock-session-token" || context.url.searchParams.get("test_auth") === "true";
 
     if (isLoggedIn) {
+      const mockTestUser = createMockTestUser();
       context.locals.user = mockTestUser;
       context.locals.session = {
         access_token: "mock-access-token",
@@ -44,24 +52,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
         token_type: "bearer",
         user: mockTestUser,
       };
-      console.log(`[TEST MODE] User authenticated: ${mockTestUser.email}`);
     } else {
       context.locals.user = null;
       context.locals.session = null;
-      console.log(`[TEST MODE] User not authenticated`);
     }
 
     // Handle auth redirects in test mode
     if (protectedRoutes.some((route) => currentPath.startsWith(route))) {
       if (!isLoggedIn) {
-        console.log(`[TEST MODE] Redirecting to login: ${currentPath}`);
         return context.redirect("/auth/login");
       }
     }
 
     if (authRoutes.includes(currentPath)) {
       if (isLoggedIn) {
-        console.log(`[TEST MODE] Redirecting logged-in user to home: ${currentPath}`);
         return context.redirect("/");
       }
     }

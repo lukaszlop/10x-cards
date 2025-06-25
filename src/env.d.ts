@@ -21,6 +21,9 @@ interface ImportMetaEnv {
   readonly PUBLIC_SUPABASE_KEY: string;
   readonly PUBLIC_SITE_URL: string;
   readonly OPENROUTER_API_KEY: string;
+  readonly E2E_USERNAME: string;
+  readonly E2E_PASSWORD: string;
+  readonly E2E_USERNAME_ID: string;
 }
 
 interface ImportMeta {

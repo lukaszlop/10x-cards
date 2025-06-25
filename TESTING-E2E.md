@@ -11,7 +11,7 @@ This guide explains how to set up and run E2E tests using Playwright with the Pa
 
 ### 1. Environment Variables
 
-Create a `.env.test` file with the following structure (see `env.test.example`):
+Create a `.env.test` file with the following structure:
 
 ```bash
 # Test user credentials
