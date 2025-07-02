@@ -5,10 +5,6 @@ inputs:
   node-version:
     description: "Node.js version to use"
     required: true
-  timeout-minutes:
-    description: "Timeout for npm ci in minutes"
-    required: false
-    default: "5"
 
 runs:
   using: "composite"
@@ -33,7 +29,6 @@ runs:
       if: steps.node-modules-cache.outputs.cache-hit != 'true'
       run: npm ci
       shell: bash
-      timeout-minutes: ${{ fromJSON(inputs.timeout-minutes) }}
 
     - name: Verify installation
       run: |
