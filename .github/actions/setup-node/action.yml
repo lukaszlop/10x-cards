@@ -1,0 +1,51 @@
+name: "Setup Node.js and Dependencies"
+description: "Setup Node.js with advanced caching and install dependencies"
+
+inputs:
+  node-version:
+    description: "Node.js version to use"
+    required: true
+  timeout-minutes:
+    description: "Timeout for npm ci in minutes"
+    required: false
+    default: "5"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js ${{ inputs.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: "npm"
+
+    - name: Cache node_modules
+      uses: actions/cache@v4
+      id: node-modules-cache
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-modules-${{ inputs.node-version }}-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-modules-${{ inputs.node-version }}-
+          ${{ runner.os }}-node-modules-
+
+    - name: Install dependencies
+      if: steps.node-modules-cache.outputs.cache-hit != 'true'
+      run: npm ci
+      shell: bash
+      timeout-minutes: ${{ fromJSON(inputs.timeout-minutes) }}
+
+    - name: Verify installation
+      run: |
+        echo "✅ Node.js setup completed"
+        echo "Node.js version: $(node --version)"
+        echo "NPM version: $(npm --version)"
+
+        if [[ "${{ steps.node-modules-cache.outputs.cache-hit }}" == "true" ]]; then
+          echo "🚀 Dependencies loaded from cache"
+        else
+          echo "📦 Dependencies installed fresh"
+        fi
+
+        echo "Dependencies installed: $(npm list --depth=0 2>/dev/null | wc -l || echo 'unknown')"
+      shell: bash

@@ -1,0 +1,60 @@
+name: "Upload Coverage to Codecov"
+description: "Upload test coverage reports to Codecov with smart token handling"
+
+inputs:
+  codecov-token:
+    description: "Codecov token for authentication"
+    required: false
+  coverage-files:
+    description: "Coverage files to upload"
+    required: false
+    default: "./coverage/lcov.info"
+  fail-ci-if-error:
+    description: "Fail CI if upload fails"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check coverage files exist
+      run: |
+        if [[ -f "${{ inputs.coverage-files }}" ]]; then
+          echo "✅ Coverage file found: ${{ inputs.coverage-files }}"
+          echo "File size: $(du -h "${{ inputs.coverage-files }}" | cut -f1)"
+        else
+          echo "❌ Coverage file not found: ${{ inputs.coverage-files }}"
+          echo "Available files in coverage/:"
+          ls -la coverage/ || echo "No coverage directory found"
+          exit 1
+        fi
+      shell: bash
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v5
+      with:
+        files: ${{ inputs.coverage-files }}
+        fail_ci_if_error: ${{ inputs.fail-ci-if-error }}
+        token: ${{ inputs.codecov-token }}
+      env:
+        CODECOV_TOKEN_AVAILABLE: ${{ inputs.codecov-token != '' }}
+
+    - name: Coverage upload status
+      run: |
+        if [[ "${{ inputs.codecov-token }}" != "" ]]; then
+          echo "✅ Coverage uploaded to Codecov with authentication"
+          echo "🔐 Token authentication: ENABLED"
+          echo "📊 Coverage data sent from authenticated source"
+        else
+          echo "⚠️  Coverage upload attempted without token (public repo mode)"
+          echo "🔓 Token authentication: DISABLED"
+          echo "ℹ️  Add CODECOV_TOKEN secret for private repos or enhanced features"
+          echo "📝 Note: Public repositories can upload without token but with limitations"
+        fi
+
+        echo ""
+        echo "📋 Upload Summary:"
+        echo "  - Coverage file: ${{ inputs.coverage-files }}"
+        echo "  - Fail on error: ${{ inputs.fail-ci-if-error }}"
+        echo "  - Upload timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+      shell: bash

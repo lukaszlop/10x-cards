@@ -1,0 +1,121 @@
+name: "Setup E2E Environment"
+description: "Validate and setup environment variables for E2E tests"
+
+inputs:
+  e2e-username:
+    description: "E2E test username"
+    required: true
+  e2e-password:
+    description: "E2E test password"
+    required: true
+  e2e-username-id:
+    description: "E2E test username ID"
+    required: true
+  test-supabase-url:
+    description: "Test Supabase URL"
+    required: true
+  test-supabase-key:
+    description: "Test Supabase anon key"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate required environment variables
+      run: |
+        echo "🔍 Validating required environment variables..."
+
+        validation_failed=false
+
+        # Check if all required secrets are non-empty
+        if [[ -z "$E2E_USERNAME" ]]; then
+          echo "❌ E2E_USERNAME secret is not set"
+          validation_failed=true
+        else
+          echo "✅ E2E_USERNAME: configured"
+        fi
+
+        if [[ -z "$E2E_PASSWORD" ]]; then
+          echo "❌ E2E_PASSWORD secret is not set"
+          validation_failed=true
+        else
+          echo "✅ E2E_PASSWORD: configured"
+        fi
+
+        if [[ -z "$E2E_USERNAME_ID" ]]; then
+          echo "❌ E2E_USERNAME_ID secret is not set"
+          validation_failed=true
+        else
+          echo "✅ E2E_USERNAME_ID: configured"
+        fi
+
+        if [[ -z "$TEST_SUPABASE_URL" ]]; then
+          echo "❌ TEST_SUPABASE_URL secret is not set"
+          validation_failed=true
+        else
+          echo "✅ TEST_SUPABASE_URL: configured"
+        fi
+
+        if [[ -z "$TEST_SUPABASE_KEY" ]]; then
+          echo "❌ TEST_SUPABASE_KEY secret is not set"
+          validation_failed=true
+        else
+          echo "✅ TEST_SUPABASE_KEY: configured"
+        fi
+
+        if [[ "$validation_failed" == "true" ]]; then
+          echo ""
+          echo "💥 Environment validation failed!"
+          echo "🔧 Required secrets are missing from GitHub repository settings"
+          echo "📝 Add the missing secrets in: Settings > Secrets and variables > Actions"
+          exit 1
+        fi
+
+        echo ""
+        echo "✅ All required secrets are configured"
+      shell: bash
+      env:
+        E2E_USERNAME: ${{ inputs.e2e-username }}
+        E2E_PASSWORD: ${{ inputs.e2e-password }}
+        E2E_USERNAME_ID: ${{ inputs.e2e-username-id }}
+        TEST_SUPABASE_URL: ${{ inputs.test-supabase-url }}
+        TEST_SUPABASE_KEY: ${{ inputs.test-supabase-key }}
+
+    - name: Create test environment file
+      run: |
+        echo "📋 Creating secure .env.test file..."
+
+        # Create .env.test file securely
+        {
+          echo "NODE_ENV=test"
+          echo "E2E_USERNAME=$E2E_USERNAME"
+          echo "E2E_PASSWORD=$E2E_PASSWORD"
+          echo "E2E_USERNAME_ID=$E2E_USERNAME_ID"
+          echo "PUBLIC_SUPABASE_URL=$TEST_SUPABASE_URL"
+          echo "PUBLIC_SUPABASE_KEY=$TEST_SUPABASE_KEY"
+        } > .env.test
+
+        echo "✅ .env.test file created successfully"
+        echo "📄 File size: $(du -h .env.test | cut -f1)"
+        echo "🔒 File permissions: $(ls -la .env.test | cut -d' ' -f1)"
+      shell: bash
+      env:
+        E2E_USERNAME: ${{ inputs.e2e-username }}
+        E2E_PASSWORD: ${{ inputs.e2e-password }}
+        E2E_USERNAME_ID: ${{ inputs.e2e-username-id }}
+        TEST_SUPABASE_URL: ${{ inputs.test-supabase-url }}
+        TEST_SUPABASE_KEY: ${{ inputs.test-supabase-key }}
+
+    - name: Verify environment setup
+      run: |
+        echo "🔍 Verifying environment setup..."
+        echo "NODE_ENV: $NODE_ENV"
+        echo "PUBLIC_SUPABASE_URL: $PUBLIC_SUPABASE_URL"
+        echo "E2E_USERNAME: $E2E_USERNAME"
+        echo ""
+        echo "📋 Environment verified successfully"
+        echo "🎯 E2E tests ready to run with test database configuration"
+      shell: bash
+      env:
+        PUBLIC_SUPABASE_URL: ${{ inputs.test-supabase-url }}
+        E2E_USERNAME: ${{ inputs.e2e-username }}

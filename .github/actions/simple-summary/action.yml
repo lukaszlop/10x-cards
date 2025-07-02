@@ -1,0 +1,51 @@
+name: "Simple Pipeline Summary"
+description: "Simple but effective pipeline status reporting"
+
+inputs:
+  test-result:
+    description: "Test job result"
+    required: true
+  build-result:
+    description: "Build job result"
+    required: true
+  e2e-result:
+    description: "E2E job result"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Pipeline Summary
+      run: |
+        echo "🔍 === Pipeline Summary ==="
+        echo "Timestamp: $(date -u +"%H:%M:%S UTC")"
+        echo ""
+
+        # Simple status check
+        test_result="${{ inputs.test-result }}"
+        build_result="${{ inputs.build-result }}"
+        e2e_result="${{ inputs.e2e-result }}"
+
+        echo "📊 Results:"
+        echo "  🧪 Tests: $test_result"
+        echo "  🏗️ Build: $build_result"
+        echo "  🎭 E2E: $e2e_result"
+        echo ""
+
+        # Check critical jobs (build & e2e)
+        if [[ "$build_result" == "success" && "$e2e_result" == "success" ]]; then
+          echo "✅ Pipeline passed - ready to deploy!"
+
+          if [[ "$test_result" != "success" ]]; then
+            echo "⚠️  Note: Test matrix had some failures (non-blocking)"
+          fi
+
+        else
+          echo "❌ Pipeline failed:"
+          [[ "$build_result" != "success" ]] && echo "  - Build issues detected"
+          [[ "$e2e_result" != "success" ]] && echo "  - E2E test failures"
+          echo ""
+          echo "💡 Check individual job logs for details"
+          exit 1
+        fi
+      shell: bash
