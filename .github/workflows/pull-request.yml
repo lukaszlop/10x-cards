@@ -35,8 +35,8 @@ jobs:
           node-version: "22"
           timeout-minutes: 5
 
-      - name: Run ESLint
-        run: npm run lint:check
+      - name: Run ESLint (CI-friendly)
+        run: npm run lint:ci
         timeout-minutes: 5
 
   # Job 2: Testy jednostkowe (równolegle z e2e-test)
