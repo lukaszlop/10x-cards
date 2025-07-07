@@ -1,4 +1,5 @@
 import { createSupabaseServer } from "@/db/supabase";
+import { getDisabledRouteRedirect, isRouteEnabled } from "@/features";
 import { defineMiddleware } from "astro:middleware";
 
 const protectedRoutes = ["/generations", "/flashcards"];
@@ -30,6 +31,12 @@ const createMockTestUser = () => {
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const currentPath = context.url.pathname;
+
+  // Check feature flags first - before any authentication checks
+  if (!isRouteEnabled(currentPath)) {
+    const redirectTarget = getDisabledRouteRedirect(currentPath);
+    return context.redirect(redirectTarget);
+  }
 
   // In test environment, use mock authentication
   if (import.meta.env.NODE_ENV === "test" || import.meta.env.CI) {

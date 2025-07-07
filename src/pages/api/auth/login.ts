@@ -1,8 +1,13 @@
+import { isFeatureEnabled } from "@/features";
 import type { APIRoute } from "astro";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals, cookies }) => {
+  if (!isFeatureEnabled("auth")) {
+    return new Response(JSON.stringify({ error: "Authentication not available" }), { status: 404 });
+  }
+
   const { email, password } = await request.json();
 
   if (!email || !password) {

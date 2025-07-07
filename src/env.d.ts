@@ -24,6 +24,8 @@ interface ImportMetaEnv {
   readonly E2E_USERNAME: string;
   readonly E2E_PASSWORD: string;
   readonly E2E_USERNAME_ID: string;
+  readonly ENV_NAME: "local" | "integration" | "prod";
+  readonly PUBLIC_ENV_NAME: "local" | "integration" | "prod";
 }
 
 interface ImportMeta {

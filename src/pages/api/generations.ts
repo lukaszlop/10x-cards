@@ -1,3 +1,4 @@
+import { isFeatureEnabled } from "@/features";
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { GenerationService } from "../../lib/services/generation.service";
@@ -10,6 +11,10 @@ const generateSchema = z.object({
 });
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  if (!isFeatureEnabled("collections")) {
+    return new Response(JSON.stringify({ error: "Feature not available" }), { status: 404 });
+  }
+
   try {
     const { supabase } = locals;
     const {
