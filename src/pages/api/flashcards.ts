@@ -1,3 +1,4 @@
+import { isFeatureEnabled } from "@/features";
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { FlashcardService } from "../../lib/services/flashcard.service";
@@ -15,6 +16,11 @@ const multipleFlashcardsSchema = z.object({
 });
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  // Check feature flag first
+  if (!isFeatureEnabled("collections")) {
+    return new Response(JSON.stringify({ error: "Feature not available" }), { status: 404 });
+  }
+
   try {
     const { supabase } = locals;
 
@@ -89,6 +95,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 };
 
 export const GET: APIRoute = async ({ url, locals }) => {
+  if (!isFeatureEnabled("collections")) {
+    return new Response(JSON.stringify({ error: "Feature not available" }), { status: 404 });
+  }
+
   try {
     const { supabase } = locals;
 
@@ -137,6 +147,10 @@ export const GET: APIRoute = async ({ url, locals }) => {
 };
 
 export const PUT: APIRoute = async ({ request, locals }) => {
+  if (!isFeatureEnabled("collections")) {
+    return new Response(JSON.stringify({ error: "Feature not available" }), { status: 404 });
+  }
+
   try {
     const { supabase } = locals;
 
@@ -182,6 +196,10 @@ export const PUT: APIRoute = async ({ request, locals }) => {
 };
 
 export const DELETE: APIRoute = async ({ request, locals }) => {
+  if (!isFeatureEnabled("collections")) {
+    return new Response(JSON.stringify({ error: "Feature not available" }), { status: 404 });
+  }
+
   try {
     const { supabase } = locals;
 

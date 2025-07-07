@@ -7,9 +7,11 @@ import { useToastManager } from "./hooks/useToastManager";
 
 interface NavigationProps {
   initialUser: User | null;
+  authEnabled: boolean;
+  collectionsEnabled: boolean;
 }
 
-export const Navigation = ({ initialUser }: NavigationProps) => {
+export const Navigation = ({ initialUser, authEnabled, collectionsEnabled }: NavigationProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const user = useStore($user);
   const [isAuthPage, setIsAuthPage] = useState(false);
@@ -146,6 +148,16 @@ export const Navigation = ({ initialUser }: NavigationProps) => {
 
   const shouldShowUser = user && !isAuthPage;
 
+  // Update navigation items based on feature flags
+  const navigationItems = [
+    ...(collectionsEnabled
+      ? [
+          { href: "/generations", label: "Generowanie fiszek", testId: "nav-generations" },
+          { href: "/flashcards", label: "Moje fiszki", testId: "nav-flashcards" },
+        ]
+      : []),
+  ];
+
   return (
     <div className="relative">
       <div
@@ -171,21 +183,17 @@ export const Navigation = ({ initialUser }: NavigationProps) => {
             `}
           >
             <div className="px-2 pt-2 pb-3 space-y-1 max-h-[calc(100vh-80px)] overflow-y-auto">
-              <a
-                href="/generations"
-                onClick={handleMobileNavClick}
-                className="text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors"
-              >
-                Generowanie fiszek
-              </a>
-              <a
-                href="/flashcards"
-                onClick={handleMobileNavClick}
-                className="text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors"
-                data-test-id="nav-flashcards-mobile"
-              >
-                Moje fiszki
-              </a>
+              {navigationItems.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={handleMobileNavClick}
+                  className="text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                  data-test-id={`${item.testId}-mobile`}
+                >
+                  {item.label}
+                </a>
+              ))}
 
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <div className="px-3 py-2">
@@ -201,13 +209,15 @@ export const Navigation = ({ initialUser }: NavigationProps) => {
                       </button>
                     </>
                   ) : (
-                    <a
-                      href="/auth/login"
-                      onClick={handleMobileNavClick}
-                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors w-full text-left block text-center"
-                    >
-                      Zaloguj się
-                    </a>
+                    authEnabled && (
+                      <a
+                        href="/auth/login"
+                        onClick={handleMobileNavClick}
+                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors w-full text-left block text-center"
+                      >
+                        Zaloguj się
+                      </a>
+                    )
                   )}
                 </div>
               </div>
@@ -216,7 +226,7 @@ export const Navigation = ({ initialUser }: NavigationProps) => {
         </div>
       </div>
 
-      <nav className="bg-white/50 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none border-b-2 border-gray-200/50 fixed inset-x-0 top-0 h-16 z-[90]">
+      <nav className="bg-white/50 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none border-b-2 border-gray-200/50 fixed inset-x-0 top-0 h-16 z-[90] sm:rounded-t-2xl md:rounded-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
           <div className="flex justify-between h-full">
             <div className="flex">
@@ -227,19 +237,16 @@ export const Navigation = ({ initialUser }: NavigationProps) => {
               </div>
 
               <div className="hidden md:ml-4 lg:ml-8 md:flex md:items-center md:space-x-2 lg:space-x-8">
-                <a
-                  href="/generations"
-                  className="text-gray-900 hover:text-gray-600 px-3 py-2 text-sm font-medium transition-colors flex items-center h-16"
-                >
-                  Generowanie fiszek
-                </a>
-                <a
-                  href="/flashcards"
-                  className="text-gray-900 hover:text-gray-600 px-3 py-2 text-sm font-medium transition-colors flex items-center h-16"
-                  data-test-id="nav-flashcards-desktop"
-                >
-                  Moje fiszki
-                </a>
+                {navigationItems.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className="text-gray-900 hover:text-gray-600 px-3 py-2 text-sm font-medium transition-colors flex items-center h-16"
+                    data-test-id={`${item.testId}-desktop`}
+                  >
+                    {item.label}
+                  </a>
+                ))}
               </div>
             </div>
 
@@ -257,12 +264,14 @@ export const Navigation = ({ initialUser }: NavigationProps) => {
                     </button>
                   </>
                 ) : (
-                  <a
-                    href="/auth/login"
-                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                  >
-                    Zaloguj się
-                  </a>
+                  authEnabled && (
+                    <a
+                      href="/auth/login"
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                    >
+                      Zaloguj się
+                    </a>
+                  )
                 )}
               </div>
 
